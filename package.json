@@ -1,6 +1,6 @@
 {
   "name": "react-store-input",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.mjs",
   "module": "./dist/index.js",

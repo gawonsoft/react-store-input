@@ -1,19 +1,34 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Store } from "./use_store";
-import { useSubscribe } from "./use_subscribe";
 
-export function useSelector<TState, TSelected>(store: Store<TState>, selector: (state: TState) => TSelected, compare: (a: TSelected, b: TSelected) => boolean = (a, b) => a === b): TSelected {
+export function useSelector<TState, TSelected>(
+  store: Store<TState>,
+  selector: (state: TState) => TSelected,
+  compare: (a: TSelected, b: TSelected) => boolean = (a, b) => a === b,
+): TSelected {
   const [state, setState] = useState(selector(store.state));
 
-  useSubscribe(store, (newState) => {
-    const result = selector(newState);
+  const stateRef = useRef(state);
 
-    if (compare(state, result)) {
-      return;
-    }
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
-    setState(result);
-  });
+  useEffect(() => {
+    const unsubscribe = store.subscribe((newState) => {
+      const result = selector(newState);
+
+      if (compare(stateRef.current, result)) {
+        return;
+      }
+
+      setState(result);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   return state;
 }
