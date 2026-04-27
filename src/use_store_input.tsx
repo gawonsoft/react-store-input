@@ -1,5 +1,5 @@
 import type { HTMLInputTypeAttribute, RefObject } from "react";
-import type { Store } from "./use_store";
+import type { Store } from "gw-store";
 import { format } from "date-fns";
 import { useStoreController } from "./use_store_controller";
 

@@ -4,7 +4,7 @@ import {
   type TextEditorProps as GwTextEditorProps,
 } from "gw-react-text-editor";
 import { useImperativeHandle, useRef } from "react";
-import type { Store } from "./use_store";
+import type { Store } from "gw-store";
 import { useStoreController } from "./use_store_controller";
 
 export type TextEditorProps<TState> = {

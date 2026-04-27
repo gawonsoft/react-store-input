@@ -1,6 +1,6 @@
-import { useSelector } from "./use_selector";
+import type { Store } from "gw-store";
+import { useSelector } from "gw-store";
 import type { ReactNode } from "react";
-import type { Store } from "./use_store";
 
 export type CreateRender<TState> = (
   selector: (state: TState) => ReactNode,

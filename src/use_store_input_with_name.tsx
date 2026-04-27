@@ -1,22 +1,22 @@
 import type { RefObject } from "react";
-import type { Store } from "./use_store";
+import type { Store } from "gw-store";
 import { useStoreInput, type StoreInputProps } from "./use_store_input";
 
 export type InferNameFromProps<
   TState,
   TName extends keyof TState | undefined,
-  TValue
+  TValue,
 > = undefined extends TName
   ? TValue
   : TName extends keyof TState
-  ? TState[TName]
-  : TValue;
+    ? TState[TName]
+    : TValue;
 
 export type StoreInputWithNameProps<
   TInputElement,
   TState,
   TName extends keyof TState | undefined,
-  TValue
+  TValue,
 > = Omit<
   StoreInputProps<
     TInputElement,
@@ -45,11 +45,11 @@ export function useStoreInputWithName<
     | HTMLSelectElement,
   TState,
   TName extends keyof TState | undefined,
-  TValue
+  TValue,
 >(
   ref: RefObject<TInputElement | null>,
   store: Store<TState>,
-  props: StoreInputWithNameProps<TInputElement, TState, TName, TValue>
+  props: StoreInputWithNameProps<TInputElement, TState, TName, TValue>,
 ) {
   const inputProps = useStoreInput(ref, store, {
     ...props,

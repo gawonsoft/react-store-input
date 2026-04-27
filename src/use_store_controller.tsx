@@ -1,6 +1,5 @@
-import { useId } from "react";
-import type { Store } from "./use_store";
-import { useSubscribe } from "./use_subscribe";
+import { useEffect, useId } from "react";
+import type { Store } from "gw-store";
 
 export type StoreControllerProps<TState> = {
   onSubscribe: (state: TState) => void;
@@ -9,17 +8,23 @@ export type StoreControllerProps<TState> = {
 
 export function useStoreController<TState>(
   store: Store<TState>,
-  props: StoreControllerProps<TState>
+  props: StoreControllerProps<TState>,
 ) {
   const dispatchKey = useId();
 
-  useSubscribe(store, (state, key) => {
-    if (key === dispatchKey) {
-      return;
-    }
+  useEffect(() => {
+    const unsub = store.subscribe((state, key) => {
+      if (key === dispatchKey) {
+        return;
+      }
 
-    props.onSubscribe(state);
-  });
+      props.onSubscribe(state);
+    });
+
+    return () => {
+      unsub();
+    };
+  }, []);
 
   const dispatch = () => {
     store.dispatch(
@@ -28,7 +33,7 @@ export function useStoreController<TState>(
       },
       {
         key: dispatchKey,
-      }
+      },
     );
   };
 

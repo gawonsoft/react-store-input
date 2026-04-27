@@ -1,5 +1,5 @@
 import { createRenderWithStore, type CreateRender } from "./create_render";
-import { useStore, type Store } from "./use_store";
+import { useStore, type Store } from "gw-store";
 import { useStoreComponent } from "./use_store_component";
 
 export type FormStore<TState> = Store<TState> &

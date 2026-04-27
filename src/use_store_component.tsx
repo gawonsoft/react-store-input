@@ -1,5 +1,5 @@
 import { useCallback, useRef, type DetailedHTMLProps } from "react";
-import type { Store } from "./use_store";
+import type { Store } from "gw-store";
 import {
   useStoreInputWithName,
   type StoreInputWithNameProps,
