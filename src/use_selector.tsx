@@ -11,10 +11,6 @@ export function useSelector<TState, TSelected>(
   const stateRef = useRef(state);
 
   useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
-
-  useEffect(() => {
     const unsubscribe = store.subscribe((newState) => {
       const result = selector(newState);
 
@@ -23,6 +19,8 @@ export function useSelector<TState, TSelected>(
       }
 
       setState(result);
+
+      stateRef.current = result;
     });
 
     return () => {

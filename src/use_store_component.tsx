@@ -4,6 +4,7 @@ import {
   useStoreInputWithName,
   type StoreInputWithNameProps,
 } from "./use_store_input_with_name";
+import { TextEditor, type TextEditorProps } from "./text_editor";
 
 export type StoreInputWithNameComponentProps<
   TElement,
@@ -59,10 +60,17 @@ export function useStoreComponent<TState>(store: Store<TState>) {
     return <Textarea store={store} {...props} />;
   }, []);
 
+  const textEditor = useCallback(function Component(
+    props: Omit<TextEditorProps<TState>, "store">,
+  ) {
+    return <TextEditor store={store} {...props} />;
+  }, []);
+
   return {
     input,
     select,
     textarea,
+    textEditor,
   };
 }
 
