@@ -4,3 +4,4 @@ export * from "./use_store_input";
 export * from "./use_store_component";
 export * from "./use_form_store";
 export * from "./text_editor";
+export * from "gw-store";
