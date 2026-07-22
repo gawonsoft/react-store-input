@@ -8,6 +8,10 @@ export default defineConfig({
   resolve: {
     alias: [
       {
+        find: /^react-store-input\/text-editor$/,
+        replacement: fileURLToPath(new URL('../src/text_editor.tsx', import.meta.url)),
+      },
+      {
         find: /^react-store-input$/,
         replacement: fileURLToPath(new URL('../src/index.tsx', import.meta.url)),
       },

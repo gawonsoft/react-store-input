@@ -1,5 +1,7 @@
 import {
+  useCallback,
   useEffect,
+  useRef,
   type ChangeEvent,
   type HTMLInputTypeAttribute,
   type RefObject,
@@ -15,6 +17,105 @@ export type InputStateValue = string | string[];
 // its reset value back to the store, sibling subscriptions must not restore
 // their previous store values into the DOM.
 const resettingForms = new WeakSet<HTMLFormElement>();
+
+type ResetBatch = (callback: () => void) => unknown;
+
+type ResetCoordinator = {
+  groups: Map<ResetBatch, Set<() => void>>;
+  handleReset: () => void;
+};
+
+const resetCoordinators = new WeakMap<HTMLFormElement, ResetCoordinator>();
+
+function registerResetBinding(
+  form: HTMLFormElement,
+  batch: ResetBatch,
+  dispatch: () => void,
+) {
+  let coordinator = resetCoordinators.get(form);
+
+  if (!coordinator) {
+    const groups = new Map<ResetBatch, Set<() => void>>();
+    const handleReset = () => {
+      resettingForms.add(form);
+
+      // Capture the current bindings because a React reset handler may render
+      // and re-register them before the native reset default action completes.
+      const groupSnapshots = Array.from(groups, ([groupBatch, bindings]) => [
+        groupBatch,
+        [...bindings],
+      ] as const);
+
+      setTimeout(() => {
+        try {
+          for (const [groupBatch, bindings] of groupSnapshots) {
+            groupBatch(() => {
+              for (const binding of bindings) {
+                binding();
+              }
+            });
+          }
+        } finally {
+          // Store notifications are synchronous, so subscriptions have already
+          // observed the completed batch before the reset guard is released.
+          setTimeout(() => resettingForms.delete(form), 0);
+        }
+      }, 0);
+    };
+
+    coordinator = { groups, handleReset };
+    resetCoordinators.set(form, coordinator);
+    form.addEventListener("reset", handleReset);
+  }
+
+  let bindings = coordinator.groups.get(batch);
+
+  if (!bindings) {
+    bindings = new Set();
+    coordinator.groups.set(batch, bindings);
+  }
+
+  bindings.add(dispatch);
+
+  return () => {
+    const currentCoordinator = resetCoordinators.get(form);
+
+    if (!currentCoordinator) {
+      return;
+    }
+
+    const currentBindings = currentCoordinator.groups.get(batch);
+    currentBindings?.delete(dispatch);
+
+    if (currentBindings?.size === 0) {
+      currentCoordinator.groups.delete(batch);
+    }
+
+    if (currentCoordinator.groups.size === 0) {
+      form.removeEventListener("reset", currentCoordinator.handleReset);
+      resetCoordinators.delete(form);
+    }
+  };
+}
+
+function equalStateValue(previous: unknown, next: unknown) {
+  if (Object.is(previous, next)) {
+    return true;
+  }
+
+  if (previous instanceof Date && next instanceof Date) {
+    return Object.is(previous.getTime(), next.getTime());
+  }
+
+  if (Array.isArray(previous) && Array.isArray(next)) {
+    return (
+      previous.length === next.length &&
+      previous.every((value, index) => Object.is(value, next[index]))
+    );
+  }
+
+  return false;
+}
 
 export type StoreInputProps<
   TInputElement,
@@ -113,16 +214,22 @@ export function useStoreInput<
   store: Store<TState>,
   props: StoreInputProps<TInputElement, TState, TValue>,
 ) {
-  const toInputValue = (value: TValue): InputDisplayValue => {
-    if (props.toInputValue) {
-      return props.toInputValue(value);
+  const inputType = props.type;
+  const inputValue = props.value;
+  const getStateValue = props.getter;
+  const setStoreValue = props.setter;
+  const mapToInputValue = props.toInputValue;
+
+  const toInputValue = useCallback((value: TValue): InputDisplayValue => {
+    if (mapToInputValue) {
+      return mapToInputValue(value);
     }
 
     if (value === undefined || value === null) {
       return "";
     }
 
-    if (props.type === "datetime-local") {
+    if (inputType === "datetime-local") {
       return formatDateTimeLocal(value);
     }
 
@@ -131,15 +238,15 @@ export function useStoreInput<
     }
 
     return String(value);
-  };
+  }, [inputType, mapToInputValue]);
 
-  const toInputChecked = (value: unknown) => {
-    if (props.type === "radio") {
-      return value !== undefined && Object.is(value, props.value);
+  const toInputChecked = useCallback((value: unknown) => {
+    if (inputType === "radio") {
+      return value !== undefined && Object.is(value, inputValue);
     }
 
     return Boolean(value);
-  };
+  }, [inputType, inputValue]);
 
   const getDefaultValue = () => {
     if (props.type !== "radio" && props.value !== undefined) {
@@ -198,6 +305,47 @@ export function useStoreInput<
     return value;
   };
 
+  const getResetStateValue = (): TValue => {
+    if (props.type === "checkbox" && props.defaultChecked !== undefined) {
+      return props.defaultChecked as TValue;
+    }
+
+    if (props.type === "radio" && props.defaultChecked) {
+      if (props.value !== undefined) {
+        return props.value as TValue;
+      }
+
+      const defaultValue = props.defaultValue ?? "";
+      return defaultToStateValue(String(defaultValue)) as TValue;
+    }
+
+    if (
+      props.type !== "file" &&
+      props.type !== "checkbox" &&
+      props.type !== "radio" &&
+      props.defaultValue !== undefined
+    ) {
+      const defaultValue = Array.isArray(props.defaultValue)
+        ? props.defaultValue.map(String)
+        : String(props.defaultValue);
+      return (props.toStateValue
+        ? props.toStateValue(defaultValue)
+        : defaultToStateValue(defaultValue)) as TValue;
+    }
+
+    return props.getter(store.state);
+  };
+
+  const resetValueRef = useRef(getResetStateValue());
+
+  const setStateValue = useCallback((state: Draft<TState>, value: TValue) => {
+    if (equalStateValue(getStateValue(store.state), value)) {
+      return;
+    }
+
+    setStoreValue(state, value);
+  }, [getStateValue, setStoreValue, store]);
+
   const { dispatch } = useStoreController(store, {
     onSubscribe: (state) => {
       const element = ref.current;
@@ -246,12 +394,18 @@ export function useStoreInput<
       }
 
       if ("files" in element && props.type === "file") {
-        props.setter(state, element.files as TValue);
+        // A cleared or reset file input exposes an empty FileList. Store null
+        // instead so the state returns to the same serializable empty value
+        // used by a typical initial form state.
+        setStateValue(
+          state,
+          (element.files?.length ? element.files : null) as TValue,
+        );
         return;
       }
 
       if ("checked" in element && props.type === "checkbox") {
-        props.setter(state, element.checked as TValue);
+        setStateValue(state, element.checked as TValue);
         return;
       }
 
@@ -264,7 +418,7 @@ export function useStoreInput<
           props.value === undefined
             ? defaultToStateValue(element.value)
             : props.value;
-        props.setter(state, value as TValue);
+        setStateValue(state, value as TValue);
         return;
       }
 
@@ -272,7 +426,7 @@ export function useStoreInput<
       const stateValue = props.toStateValue
         ? props.toStateValue(inputValue)
         : defaultToStateValue(inputValue);
-      props.setter(state, stateValue as TValue);
+      setStateValue(state, stateValue as TValue);
     },
   });
 
@@ -284,27 +438,47 @@ export function useStoreInput<
       return;
     }
 
-    const handleReset = () => {
-      resettingForms.add(form);
+    // A timer is used by the shared coordinator because browsers may apply the
+    // native reset default action after the reset event's microtask checkpoint.
+    return registerResetBinding(form, store.batch, () => {
+      if (!element.isConnected) {
+        return;
+      }
 
+      const resetValue = resetValueRef.current;
+      const writeResetValue = () => {
+        if (
+          "checked" in element &&
+          (props.type === "checkbox" || props.type === "radio")
+        ) {
+          element.checked = toInputChecked(resetValue);
+        } else if (!("files" in element && props.type === "file")) {
+          writeElementValue(element, toInputValue(resetValue));
+        }
+
+      };
+
+      writeResetValue();
+      store.dispatch((state) => setStateValue(state, resetValue));
+
+      // Some renderers apply the native reset default after the first reset
+      // task. Reassert the captured default after that action without another
+      // store dispatch, notably for React-managed multiple selects.
       setTimeout(() => {
-        try {
-          if (element.isConnected) {
-            dispatch();
-          }
-        } finally {
-          // Every reset listener queues its dispatch in the first timer layer,
-          // so cleanup in the second layer runs after all controls. A timer is
-          // used instead of a microtask because browsers may apply the native
-          // reset default action after the reset event's microtask checkpoint.
-          setTimeout(() => resettingForms.delete(form), 0);
+        if (element.isConnected) {
+          writeResetValue();
         }
       }, 0);
-    };
-
-    form.addEventListener("reset", handleReset);
-    return () => form.removeEventListener("reset", handleReset);
-  }, [dispatch, ref]);
+    });
+  }, [
+    props.type,
+    ref,
+    setStateValue,
+    store,
+    store.batch,
+    toInputChecked,
+    toInputValue,
+  ]);
 
   return {
     defaultValue: getDefaultValue(),

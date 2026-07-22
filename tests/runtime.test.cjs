@@ -150,6 +150,22 @@ test("stores every selected option from a multiple select", async () => {
   assert.deepEqual(store.state.colors, ["red", "blue"]);
 });
 
+test("stores null for an empty file input", async () => {
+  const store = await mount({ attachment: null }, (form) =>
+    React.createElement(form.input, {
+      name: "attachment",
+      type: "file",
+    }),
+  );
+  const input = container.querySelector("input");
+
+  await act(async () => {
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+
+  assert.equal(store.state.attachment, null);
+});
+
 test("synchronizes native form reset back to the store", async () => {
   const initialState = {
     email: "first",
@@ -190,6 +206,8 @@ test("synchronizes native form reset back to the store", async () => {
   const [email, password, rememberMe, admin, user] =
     container.querySelectorAll("input");
   const form = container.querySelector("form");
+  let notifications = 0;
+  const unsubscribe = store.subscribe(() => notifications++);
 
   await act(async () => {
     setNativeValue(email, "second");
@@ -205,6 +223,7 @@ test("synchronizes native form reset back to the store", async () => {
     rememberMe: true,
     role: "admin",
   });
+  const notificationsBeforeReset = notifications;
 
   await act(async () => {
     form.dispatchEvent(new Event("reset", { bubbles: true, cancelable: true }));
@@ -220,4 +239,132 @@ test("synchronizes native form reset back to the store", async () => {
 
   assert.deepEqual(store.state, initialState);
   assert.deepEqual(JSON.parse(container.querySelector("pre").textContent), initialState);
+  assert.equal(notifications, notificationsBeforeReset + 1);
+  unsubscribe();
+});
+
+test("resets bound fields from a reset button without an onReset handler", async () => {
+  const initialState = {
+    email: "first",
+    rememberMe: false,
+    interests: ["typescript"],
+  };
+  const store = await mount(initialState, (form) =>
+    React.createElement(
+      "form",
+      null,
+      React.createElement(form.input, { name: "email" }),
+      React.createElement(form.input, {
+        name: "rememberMe",
+        type: "checkbox",
+      }),
+      React.createElement(
+        form.select,
+        { name: "interests", multiple: true },
+        React.createElement("option", { value: "typescript" }, "TypeScript"),
+        React.createElement("option", { value: "forms" }, "Forms"),
+      ),
+      React.createElement("button", { type: "reset" }, "Reset all"),
+    ),
+  );
+  const input = container.querySelector('input[name="email"]');
+  const checkbox = container.querySelector('input[name="rememberMe"]');
+  const select = container.querySelector("select");
+  const resetButton = container.querySelector("button");
+  let notifications = 0;
+  const unsubscribe = store.subscribe(() => notifications++);
+
+  await act(async () => {
+    setNativeValue(input, "second");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    checkbox.click();
+    select.options[0].selected = false;
+    select.options[1].selected = true;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  const notificationsBeforeReset = notifications;
+
+  await act(async () => {
+    resetButton.click();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  });
+
+  assert.deepEqual(store.state, initialState);
+  assert.equal(input.value, initialState.email);
+  assert.equal(checkbox.checked, initialState.rememberMe);
+  assert.deepEqual(
+    Array.from(select.options)
+      .filter((option) => option.selected)
+      .map((option) => option.value),
+    initialState.interests,
+  );
+  assert.equal(notifications, notificationsBeforeReset + 1);
+  unsubscribe();
+});
+
+test("does not notify when reset values are already semantically equal", async () => {
+  const initialState = {
+    meetingAt: new Date(2026, 6, 22, 14, 30),
+    interests: ["typescript", "forms"],
+  };
+  const store = await mount(initialState, (form) =>
+    React.createElement(
+      "form",
+      null,
+      React.createElement(form.input, {
+        name: "meetingAt",
+        type: "datetime-local",
+      }),
+      React.createElement(
+        form.select,
+        { name: "interests", multiple: true },
+        React.createElement("option", { value: "typescript" }, "TypeScript"),
+        React.createElement("option", { value: "forms" }, "Forms"),
+      ),
+    ),
+  );
+  const form = container.querySelector("form");
+  let notifications = 0;
+  const unsubscribe = store.subscribe(() => notifications++);
+
+  await act(async () => {
+    form.dispatchEvent(new Event("reset", { bubbles: true, cancelable: true }));
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  });
+
+  assert.equal(notifications, 0);
+  unsubscribe();
+});
+
+test("supports a full-store reset handler without duplicate notifications", async () => {
+  const initialState = { email: "first", revision: 0 };
+  const store = await mount(initialState, (form) =>
+    React.createElement(
+      "form",
+      { onReset: () => form.dispatch(initialState) },
+      React.createElement(form.input, { name: "email" }),
+      React.createElement("button", { type: "reset" }, "Reset all"),
+    ),
+  );
+  const input = container.querySelector("input");
+  const resetButton = container.querySelector("button");
+  let notifications = 0;
+  const unsubscribe = store.subscribe(() => notifications++);
+
+  await act(async () => {
+    setNativeValue(input, "second");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    store.dispatch({ revision: 1 });
+  });
+  const notificationsBeforeReset = notifications;
+
+  await act(async () => {
+    resetButton.click();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  });
+
+  assert.deepEqual(store.state, initialState);
+  assert.equal(input.value, initialState.email);
+  assert.equal(notifications, notificationsBeforeReset + 1);
+  unsubscribe();
 });
