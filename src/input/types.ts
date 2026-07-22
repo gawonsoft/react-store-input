@@ -1,14 +1,16 @@
 import type { ChangeEvent, HTMLInputTypeAttribute } from "react";
-import type { Draft, Immutable } from "immer";
 
 export type InputDisplayValue = string | number | readonly string[];
 export type InputStateValue = string | string[];
+export type InputControlValue =
+  | string
+  | readonly string[]
+  | number
+  | boolean
+  | FileList
+  | null;
 
-export type StoreInputProps<
-  TInputElement,
-  TState extends object,
-  TValue,
-> = {
+export type StoreInputOptions<TInputElement> = {
   type?: HTMLInputTypeAttribute;
   defaultValue?: InputDisplayValue;
   value?: InputDisplayValue;
@@ -16,8 +18,24 @@ export type StoreInputProps<
   defaultChecked?: boolean;
   multiple?: boolean;
   onChange?: (event: ChangeEvent<TInputElement>) => void;
-  getter: (state: Immutable<TState>) => TValue;
-  setter: (state: Draft<TState>, value: TValue) => void;
-  toInputValue?: (value: TValue) => InputDisplayValue;
-  toStateValue?: (value: InputStateValue) => TValue;
+};
+
+export type StoreInputBindingOptions<TInputElement, TValue> =
+  StoreInputOptions<TInputElement> & {
+    resetValue?: TValue;
+};
+
+export type StoreInputDomProps<TInputElement> = {
+  defaultValue?: InputDisplayValue;
+  defaultChecked?: boolean;
+  onChange: (event: ChangeEvent<TInputElement>) => void;
+};
+
+export type StoreInputMeta<TError> =
+  | { valid: true; error?: never }
+  | { valid: false; error: TError };
+
+export type BindingInputResult<TInputElement, TError> = {
+  inputProps: StoreInputDomProps<TInputElement>;
+  meta: StoreInputMeta<TError>;
 };

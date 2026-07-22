@@ -1,5 +1,6 @@
 import { Input, type FormStore } from "react-store-input";
 import { Field } from "../components/Field";
+import { NicknameInput } from "../components/NicknameInput";
 import { RevisionController } from "../components/RevisionController";
 import { Section } from "../components/Section";
 import type { DemoState } from "../demo/state";
@@ -18,13 +19,8 @@ export function CustomBindingsSection({
       <Field label="Standalone Input" hint="Input component">
         <Input store={store} name="displayName" />
       </Field>
-      <Field label="Nested nickname" hint="getter + setter">
-        <store.input
-          getter={(state) => state.profile.nickname}
-          setter={(state, value) => {
-            state.profile.nickname = value;
-          }}
-        />
+      <Field label="Nested nickname" hint="stateLens + Codec">
+        <NicknameInput store={store} />
       </Field>
       <Field label="Custom controller" hint="useStoreController" wide>
         <RevisionController store={store} />

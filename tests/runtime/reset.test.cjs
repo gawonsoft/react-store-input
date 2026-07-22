@@ -146,6 +146,48 @@ test("resets bound fields from a reset button without an onReset handler", async
   unsubscribe();
 });
 
+test("resets named fields to explicit DOM defaults", async () => {
+  const store = await mount({ agree: true, amount: 10 }, (form) =>
+    React.createElement(
+      "form",
+      null,
+      React.createElement(form.input, {
+        name: "agree",
+        type: "checkbox",
+        defaultChecked: false,
+      }),
+      React.createElement(form.input, {
+        name: "amount",
+        type: "number",
+        defaultValue: 5,
+      }),
+      React.createElement("button", { type: "reset" }, "Reset"),
+    ),
+  );
+  const container = getContainer();
+  const [checkbox, amount] = container.querySelectorAll("input");
+  const resetButton = container.querySelector("button");
+
+  await act(async () => {
+    checkbox.click();
+    setNativeValue(amount, "8");
+    amount.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+
+  assert.equal(checkbox.checked, true);
+  assert.equal(store.state.amount, 8);
+
+  await act(async () => {
+    resetButton.click();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  });
+
+  assert.equal(store.state.agree, false);
+  assert.equal(store.state.amount, 5);
+  assert.equal(checkbox.checked, false);
+  assert.equal(amount.value, "5");
+});
+
 test("does not notify when reset values are already semantically equal", async () => {
   const initialState = {
     meetingAt: new Date(2026, 6, 22, 14, 30),

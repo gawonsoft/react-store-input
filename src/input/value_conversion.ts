@@ -3,18 +3,13 @@ import { formatDateTimeLocal } from "./dom_value";
 import type {
   InputDisplayValue,
   InputStateValue,
-  StoreInputProps,
+  StoreInputOptions,
 } from "./types";
 
 export function convertToInputValue<TValue>(
   value: TValue,
   type?: HTMLInputTypeAttribute,
-  converter?: (value: TValue) => InputDisplayValue,
 ): InputDisplayValue {
-  if (converter) {
-    return converter(value);
-  }
-
   if (value === undefined || value === null) {
     return "";
   }
@@ -60,10 +55,10 @@ export function convertToStateValue(
   return value;
 }
 
-export function resolveDefaultValue<TInputElement, TState extends object, TValue>(
-  props: StoreInputProps<TInputElement, TState, TValue>,
+export function resolveDefaultValue<TInputElement, TValue>(
+  props: StoreInputOptions<TInputElement>,
   stateValue: TValue,
-  toInputValue: (value: TValue) => InputDisplayValue,
+  format: (value: TValue) => InputDisplayValue,
 ) {
   if (props.type !== "radio" && props.value !== undefined) {
     return undefined;
@@ -81,15 +76,14 @@ export function resolveDefaultValue<TInputElement, TState extends object, TValue
     return undefined;
   }
 
-  return toInputValue(stateValue);
+  return format(stateValue);
 }
 
 export function resolveDefaultChecked<
   TInputElement,
-  TState extends object,
   TValue,
 >(
-  props: StoreInputProps<TInputElement, TState, TValue>,
+  props: StoreInputOptions<TInputElement>,
   stateValue: TValue,
   toChecked: (value: TValue) => boolean,
 ) {
@@ -108,11 +102,11 @@ export function resolveDefaultChecked<
 
 export function resolveResetStateValue<
   TInputElement,
-  TState extends object,
   TValue,
 >(
-  props: StoreInputProps<TInputElement, TState, TValue>,
+  props: StoreInputOptions<TInputElement>,
   stateValue: TValue,
+  parse: (value: InputStateValue) => TValue,
 ): TValue {
   if (props.type === "checkbox" && props.defaultChecked !== undefined) {
     return props.defaultChecked as TValue;
@@ -138,9 +132,7 @@ export function resolveResetStateValue<
     const defaultValue = Array.isArray(props.defaultValue)
       ? props.defaultValue.map(String)
       : String(props.defaultValue);
-    return (props.toStateValue
-      ? props.toStateValue(defaultValue)
-      : convertToStateValue(defaultValue, props.type)) as TValue;
+    return parse(defaultValue);
   }
 
   return stateValue;

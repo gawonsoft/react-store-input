@@ -7,6 +7,33 @@ and this project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-22
+
+### Added
+
+- Typed `Lens`, `Codec`, and `InputBinding` primitives for custom controls.
+- `stateLens` for generating a getter and setter from one typed state path.
+- `gw-result@0.3.0`-based codec parsing with typed failure metadata from
+  `useStoreInput`.
+- `assertLensLaws` and `assertCodecLaws` helpers for testing mapping and
+  round-trip invariants.
+- Top-level `ok`, `err`, and `Result` re-exports for codec implementations.
+
+### Changed
+
+- Removed the deprecated `getter`, `setter`, `toInputValue`, and
+  `toStateValue` APIs. Nested and converted controls now use bindings.
+- Reimplemented named controls internally with a generated Lens and default
+  Codec while preserving built-in conversion and reset behavior.
+- Expanded the custom currency example to demonstrate validation failures and
+  accessible error feedback.
+
+### Fixed
+
+- Preserved invalid raw control input while unrelated store fields update.
+- Cleared binding parse errors and restored the initial domain value on native
+  form reset.
+
 ## [0.3.0] - 2026-07-22
 
 ### Added

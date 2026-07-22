@@ -4,7 +4,6 @@ import {
   type TextEditorProps as GwTextEditorProps,
 } from "gw-react-text-editor";
 import { useImperativeHandle, useRef } from "react";
-import type { Draft, Immutable } from "immer";
 import type { Store } from "gw-store";
 import { useStoreController } from "../store/use_store_controller";
 
@@ -13,16 +12,12 @@ export type TextEditorProps<TState extends object> = Omit<
   "name"
 > & {
   store: Store<TState>;
-  name?: keyof TState;
-  getter?: (state: Immutable<TState>) => string;
-  setter?: (state: Draft<TState>, value: string) => void;
+  name: keyof TState;
 };
 
 export function TextEditor<TState extends object>({
   store,
   name,
-  getter,
-  setter,
   defaultValue,
   ref,
   ...props
@@ -43,11 +38,7 @@ export function TextEditor<TState extends object>({
         return;
       }
 
-      const result = getter
-        ? getter(state) || ""
-        : name === undefined
-          ? ""
-          : (state[name as never] as unknown as string) || "";
+      const result = (state[name as never] as unknown as string) || "";
 
       if (controller.value !== result) {
         controller.value = result;
@@ -60,29 +51,18 @@ export function TextEditor<TState extends object>({
         return;
       }
 
-      if (setter) {
-        setter(state, controller.value);
-      } else if (name !== undefined) {
-        state[name as never] = controller.value as unknown as never;
-      }
+      state[name as never] = controller.value as unknown as never;
     },
   });
 
-  const getDefaultValue = () => {
-    if (getter) {
-      return getter(store.state);
-    }
-
-    return name === undefined
-      ? undefined
-      : (store.state[name as never] as unknown as string);
-  };
+  const getDefaultValue = () =>
+    store.state[name as never] as unknown as string;
 
   return (
     <GwTextEditor
       {...props}
       ref={controllerRef}
-      name={name === undefined ? undefined : String(name)}
+      name={String(name)}
       defaultValue={defaultValue ?? getDefaultValue()}
       onChange={(event) => {
         dispatch();

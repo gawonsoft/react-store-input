@@ -14,7 +14,7 @@ export function NumbersDatesSection({ store }: { store: FormStore<DemoState> }) 
       <Field label="Number" hint="number | undefined">
         <store.input name="quantity" type="number" min={0} max={20} />
       </Field>
-      <Field label="Custom currency input" hint="useStoreInput">
+      <Field label="Custom currency input" hint="Lens + Codec + Result">
         <CurrencyInput store={store} />
       </Field>
       <Field label="Range" hint="number" wide>

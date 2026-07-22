@@ -104,6 +104,27 @@
   box-shadow: 0 0 0 3px rgba(109, 93, 252, 0.12);
 }
 
+.binding-input {
+  display: grid;
+  gap: 6px;
+}
+
+.binding-input input[aria-invalid="true"] {
+  border-color: #c43d59;
+  box-shadow: 0 0 0 3px rgba(196, 61, 89, 0.1);
+}
+
+.binding-error {
+  min-height: 1.2em;
+  color: #777285;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.binding-input input[aria-invalid="true"] + .binding-error {
+  color: #a82f49;
+}
+
 .range-row,
 .color-row {
   display: flex;

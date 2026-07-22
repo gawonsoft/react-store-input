@@ -1,5 +1,6 @@
 import { Select, type FormStore } from "react-store-input";
 import { Field } from "../components/Field";
+import { NewsletterSelect } from "../components/NewsletterSelect";
 import { Section } from "../components/Section";
 import type { DemoState } from "../demo/state";
 
@@ -33,15 +34,8 @@ export function ChoicesSection({ store }: { store: FormStore<DemoState> }) {
           <option value="design">Design</option>
         </Select>
       </Field>
-      <Field label="Boolean select" hint="custom converters">
-        <store.select
-          name="newsletter"
-          toInputValue={(value) => (value ? "yes" : "no")}
-          toStateValue={(value) => value === "yes"}
-        >
-          <option value="yes">Subscribed</option>
-          <option value="no">Not subscribed</option>
-        </store.select>
+      <Field label="Boolean select" hint="custom Codec">
+        <NewsletterSelect store={store} />
       </Field>
       <Field label="Multiple select" hint="string[]" wide>
         <store.select name="interests" multiple size={4}>
