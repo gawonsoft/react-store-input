@@ -39,9 +39,7 @@ export function useStoreController<TState extends object>(
 
   const dispatch = useCallback(() => {
     store.dispatch(
-      (state) => {
-        propsRef.current.onDispatch(state);
-      },
+      (state) => propsRef.current.onDispatch(state),
       { key: dispatchKey },
     );
   }, [dispatchKey, store]);

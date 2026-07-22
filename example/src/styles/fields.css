@@ -1,0 +1,203 @@
+.demo-section {
+  padding: 28px;
+  border-radius: 24px;
+}
+
+.section-heading {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 26px;
+}
+
+.section-heading > span {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  color: white;
+  background: #6d5dfc;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.section-heading h2,
+.state-heading h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.7rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.section-heading p {
+  max-width: 660px;
+  margin: 7px 0 0;
+  color: #777285;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.field-wide {
+  grid-column: 1 / -1;
+}
+
+.field-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.field-label strong {
+  font-size: 0.82rem;
+}
+
+.field-label code {
+  color: #8a8497;
+  font-size: 0.68rem;
+}
+
+.field > input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
+.field > select,
+.field > textarea,
+.field > div > input:not([type="color"]):not([type="range"]),
+.field > label > input:not([type="checkbox"]):not([type="radio"]) {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #d8d4cc;
+  border-radius: 11px;
+  color: #27243b;
+  background: #fbfaf7;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.field textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.field select[multiple] {
+  min-height: 126px;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: #8f83ff;
+  box-shadow: 0 0 0 3px rgba(109, 93, 252, 0.12);
+}
+
+.range-row,
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+}
+
+.range-row input[type="range"] {
+  flex: 1;
+  accent-color: #6d5dfc;
+}
+
+.range-row output {
+  min-width: 56px;
+  padding: 8px;
+  border-radius: 10px;
+  text-align: center;
+  color: #5748df;
+  background: #f1efff;
+  font-weight: 800;
+}
+
+.color-row input[type="color"] {
+  width: 72px;
+  height: 44px;
+  padding: 4px;
+  border: 1px solid #d8d4cc;
+  border-radius: 11px;
+  background: #fbfaf7;
+}
+
+.color-row code {
+  color: #625d70;
+}
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.choice-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #d8d4cc;
+  border-radius: 11px;
+  color: #5f5b6d;
+  background: #fbfaf7;
+  font-size: 0.84rem;
+}
+
+.choice-card input {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: #6d5dfc;
+}
+
+.revision-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 16px;
+  border: 1px solid #d1ccff;
+  border-radius: 13px;
+  color: #5748df;
+  background: linear-gradient(135deg, #f5f3ff, #ebe8ff);
+  transition: transform 150ms ease;
+}
+
+.revision-button span {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.2rem;
+}
+
+.revision-button strong {
+  font-size: 0.75rem;
+}
+
+.editor-demo {
+  grid-column: 1 / -1;
+  min-height: 80px;
+  padding: 18px;
+  border: 1px dashed #cfc9c0;
+  border-radius: 14px;
+  background: #fbfaf7;
+}
+
+.loading {
+  color: #777285;
+}

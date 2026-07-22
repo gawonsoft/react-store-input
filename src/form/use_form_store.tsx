@@ -1,6 +1,9 @@
-import { createRenderWithStore, type CreateRender } from "./create_render";
 import { useStore, type Store } from "gw-store";
-import { useStoreComponent } from "./use_store_component";
+import {
+  createRenderWithStore,
+  type CreateRender,
+} from "../store/create_render";
+import { useStoreComponent } from "./store_components";
 
 export type FormStore<TState extends object> = Store<TState> &
   ReturnType<typeof useStoreComponent<TState>> & {
@@ -11,7 +14,6 @@ export function useFormStore<TState extends object>(
   initialState: TState,
 ): FormStore<TState> {
   const store = useStore<TState>(initialState);
-
   const storeComponent = useStoreComponent<TState>(store);
 
   return {

@@ -13,7 +13,10 @@
   "license": "MIT",
   "type": "commonjs",
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
   ],
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
@@ -47,7 +50,7 @@
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "test:types": "tsc -p tests/tsconfig.json",
-    "test:runtime": "node --test tests/runtime.test.cjs",
+    "test:runtime": "node --test tests/runtime/input.test.cjs tests/runtime/reset.test.cjs",
     "test:package": "node scripts/package-smoke.cjs",
     "test:example": "npm --prefix example run lint && npm --prefix example run build",
     "check": "npm run lint && npm run typecheck && npm run build && npm run test:types && npm run test:runtime && npm run test:package && npm run test:example",

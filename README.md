@@ -179,6 +179,25 @@ import { TextEditor } from "react-store-input/text-editor";
 
 ## Development
 
+Release history is tracked in [CHANGELOG.md](./CHANGELOG.md). The manual
+pre-release checks are documented in [docs/PUBLISHING.md](./docs/PUBLISHING.md).
+
+Source code is grouped by responsibility:
+
+```text
+src/
+├─ input/   DOM value conversion, reset coordination, and input hooks
+├─ form/    bound components and useFormStore composition
+├─ store/   controller and render helpers
+└─ editor/  optional text-editor integration
+
+example/src/
+├─ components/  reusable demo UI
+├─ sections/    one catalog section per capability group
+├─ demo/        state model and initial data
+└─ styles/      layout, fields, toolbar, state panel, and responsive rules
+```
+
 ```sh
 npm run typecheck
 npm test
