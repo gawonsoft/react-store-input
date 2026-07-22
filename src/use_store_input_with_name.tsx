@@ -3,7 +3,7 @@ import type { Store } from "gw-store";
 import { useStoreInput, type StoreInputProps } from "./use_store_input";
 
 export type InferNameFromProps<
-  TState,
+  TState extends object,
   TName extends keyof TState | undefined,
   TValue,
 > = undefined extends TName
@@ -12,38 +12,63 @@ export type InferNameFromProps<
     ? TState[TName]
     : TValue;
 
-export type StoreInputWithNameProps<
+type BoundStoreInputProps<
+  TInputElement,
+  TState extends object,
+  TName extends keyof TState | undefined,
+  TValue,
+> = StoreInputProps<
   TInputElement,
   TState,
+  InferNameFromProps<TState, TName, TValue>
+>;
+
+type NamedBinding<
+  TInputElement,
+  TState extends object,
+  TName extends keyof TState | undefined,
+  TValue,
+> = {
+  name: Exclude<TName, undefined>;
+} & Partial<
+  Pick<
+    BoundStoreInputProps<TInputElement, TState, TName, TValue>,
+    "getter" | "setter"
+  >
+>;
+
+type CustomBinding<
+  TInputElement,
+  TState extends object,
+  TName extends keyof TState | undefined,
+  TValue,
+> = {
+  name?: undefined;
+} & Pick<
+  BoundStoreInputProps<TInputElement, TState, TName, TValue>,
+  "getter" | "setter"
+>;
+
+export type StoreInputWithNameProps<
+  TInputElement,
+  TState extends object,
   TName extends keyof TState | undefined,
   TValue,
 > = Omit<
-  StoreInputProps<
-    TInputElement,
-    TState,
-    InferNameFromProps<TState, TName, TValue>
-  >,
+  BoundStoreInputProps<TInputElement, TState, TName, TValue>,
   "getter" | "setter"
 > &
-  Partial<
-    Pick<
-      StoreInputProps<
-        TInputElement,
-        TState,
-        InferNameFromProps<TState, TName, TValue>
-      >,
-      "getter" | "setter"
-    >
-  > & {
-    name?: TName;
-  };
+  (
+    | NamedBinding<TInputElement, TState, TName, TValue>
+    | CustomBinding<TInputElement, TState, TName, TValue>
+  );
 
 export function useStoreInputWithName<
   TInputElement extends
     | HTMLInputElement
     | HTMLTextAreaElement
     | HTMLSelectElement,
-  TState,
+  TState extends object,
   TName extends keyof TState | undefined,
   TValue,
 >(
@@ -58,21 +83,24 @@ export function useStoreInputWithName<
         return props.getter(state);
       }
 
-      return state[props.name as never];
+      return (state as Readonly<Record<PropertyKey, unknown>>)[
+        props.name as PropertyKey
+      ] as InferNameFromProps<TState, TName, TValue>;
     },
     setter: (state, value) => {
       if (props.setter) {
         props.setter(state, value);
-
         return;
       }
 
-      state[props.name as never] = value as never;
+      (state as unknown as Record<PropertyKey, unknown>)[
+        props.name as PropertyKey
+      ] = value;
     },
   });
 
   return {
     ...inputProps,
-    name: "name" in props ? String(props.name) : undefined,
+    name: props.name === undefined ? undefined : String(props.name),
   };
 }

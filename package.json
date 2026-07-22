@@ -1,47 +1,103 @@
 {
   "name": "react-store-input",
-  "version": "0.2.6",
+  "version": "0.3.0",
+  "description": "Typed React form inputs backed by a small immutable store",
+  "keywords": [
+    "react",
+    "form",
+    "input",
+    "state-management",
+    "typescript"
+  ],
+  "author": "gawonsoft",
+  "license": "MIT",
+  "type": "commonjs",
+  "files": [
+    "dist"
+  ],
   "types": "./dist/index.d.ts",
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./text-editor": {
+      "import": {
+        "types": "./dist/text-editor.d.mts",
+        "default": "./dist/text-editor.mjs"
+      },
+      "require": {
+        "types": "./dist/text-editor.d.ts",
+        "default": "./dist/text-editor.js"
+      }
     }
   },
   "scripts": {
-    "build": "NODE_OPTIONS='--max-old-space-size=16384' tsup",
-    "dev": "tsup --watch"
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "test:types": "tsc -p tests/tsconfig.json",
+    "test:runtime": "node --test tests/runtime.test.cjs",
+    "test:package": "node scripts/package-smoke.cjs",
+    "test:example": "npm --prefix example run lint && npm --prefix example run build",
+    "check": "npm run lint && npm run typecheck && npm run build && npm run test:types && npm run test:runtime && npm run test:package && npm run test:example",
+    "test": "npm run check",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run check"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gawonsoft/react-store-input.git"
   },
-  "author": "",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/gawonsoft/react-store-input/issues"
   },
   "homepage": "https://github.com/gawonsoft/react-store-input#readme",
-  "description": "",
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@types/node": "^24.10.1",
     "@types/react": "^18.3.1 || ^19.2.1",
     "@types/react-dom": "^18.3.1 || ^19.2.1",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "gw-react-text-editor": "^0.1.6",
+    "jsdom": "^24.1.3",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "tsup": "^8.5.1",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.65.0"
   },
   "peerDependencies": {
-    "react": "^18.3.1 || ^19.2.1",
-    "react-dom": "^18.3.1 || ^19.2.1"
+    "gw-react-text-editor": "^0.1.6",
+    "react": ">=18.0.0 <20.0.0",
+    "react-dom": ">=18.0.0 <20.0.0"
+  },
+  "peerDependenciesMeta": {
+    "gw-react-text-editor": {
+      "optional": true
+    }
   },
   "dependencies": {
-    "date-fns": "^4.1.0",
-    "gw-react-text-editor": "^0.1.4",
-    "gw-store": "^0.1.1",
-    "immer": "^11.1.3"
+    "gw-store": "0.2.0",
+    "immer": "^11.1.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "registry": "https://registry.npmjs.org/"
   }
 }

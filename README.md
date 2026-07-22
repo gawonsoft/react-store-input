@@ -1,285 +1,186 @@
 # React Store Input
 
-The goal of this package is to make state management easier when using input elements in React.
+Typed, store-backed form controls for React 18 and 19. The package uses
+[`gw-store`](https://www.npmjs.com/package/gw-store) 0.2.0, so state snapshots
+are immutable and updates are made through Immer recipes.
 
-It eliminates repetitive code required to implement state changes and subscriptions for input elements, and provides a simple interface.
+## Install
 
-At the same time, it allows you to use all the attributes originally provided by the input tag as-is, without needing to learn this package.
+```sh
+npm install react-store-input
+```
 
-## Get Started
-
-This is a simple example of how to use this package.
+## Quick start
 
 ```tsx
-import { useFormStore } from "dn-react-input";
+import { useFormStore } from "react-store-input";
 
-export default function App() {
-  const store = useFormStore({
+export default function LoginForm() {
+  const form = useFormStore({
     email: "",
     password: "",
+    rememberMe: false,
   });
-
-  const submit = async () => {
-    const { email, password } = store.state;
-
-    alert(`Email: ${email}\nPassword: ${password}`);
-  };
 
   return (
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        submit();
+      onSubmit={(event) => {
+        event.preventDefault();
+        console.log(form.state);
       }}
     >
-      <store.input name="email" type="email" />
-      <store.input name="password" type="password" />
-      <button type="submit">Submit</button>
+      <form.input name="email" type="email" />
+      <form.input name="password" type="password" />
+      <form.input name="rememberMe" type="checkbox" />
+      <button type="submit">Sign in</button>
     </form>
   );
 }
 ```
 
-## How to define state?
+`useFormStore` returns the complete `gw-store` API (`state`, `dispatch`,
+`batch`, and `subscribe`) together with stable `input`, `select`, `textarea`,
+and `render` helpers.
 
-You can define any state you want as an object when calling `useStore`.
+## Components
+
+You can use the standalone components when the store is passed from elsewhere:
 
 ```tsx
-function Component() {
-    ...
+import { Input, Select, Textarea, useStore } from "react-store-input";
 
-    const store = useStore({
-        email: "",
-        password: "",
-        rememberMe: false,
-    });
+const store = useStore({ role: "user", bio: "" });
 
-    ...
-}
+<Input store={store} name="role" type="radio" value="admin" />;
+<Input store={store} name="role" type="radio" value="user" />;
+<Select store={store} name="role">
+  <option value="admin">Admin</option>
+  <option value="user">User</option>
+</Select>;
+<Textarea store={store} name="bio" rows={5} />;
 ```
 
-It's a single source of truth for your form state.
-
-## How to get input values?
-
-You can access the current values of the input elements through the `state` property of the store.
+A control must have either a valid state `name`, or both a custom `getter` and
+`setter`. TypeScript rejects controls that provide neither mapping.
 
 ```tsx
-function Component() {
-    ...
-
-    const submit = () => {
-        const { email, password, rememberMe } = store.state;
-    };
-
-    ...
-}
+<Input
+  store={store}
+  getter={(state) => state.profile.email}
+  setter={(state, value) => {
+    state.profile.email = value;
+  }}
+/>
 ```
 
-## How to add input elements?
+## Value conversion
 
-You can add input elements using the `Input` component provided by the store. There are 'Select' and 'Textarea' components as well.
+The default conversions are:
+
+- checkbox → `boolean`
+- radio → the original `value` prop, preserving numbers and strings
+- number/range → `number`, or `undefined` when empty
+- datetime-local → `Date`, or `undefined` when empty or invalid
+- multiple select → `string[]`
+- file → `FileList | null`
+- other controls → `string`
+
+Use `toInputValue` and `toStateValue` for domain-specific values:
 
 ```tsx
-import { Input } from "dn-react-input";
-
-function Component() {
-    ...
-
-    return (
-        <form>
-            <Input store={store} name="email" type="email" />
-            <Input store={store} name="password" type="password" />
-            <Input store={store} name="rememberMe" type="checkbox" />
-        </form>
-    );
-}
+<form.select
+  name="rememberMe"
+  toInputValue={(value) => (value ? "yes" : "no")}
+  toStateValue={(value) => value === "yes"}
+>
+  <option value="yes">Yes</option>
+  <option value="no">No</option>
+</form.select>
 ```
 
-If you want to avoid passing the store to each input component, use `useStoreComponent`. This hook provides input components that are already connected to the store.
+The controls are store-backed uncontrolled inputs. An explicit `value` or
+`checked` prop is respected as an externally controlled value and is not
+overwritten by store subscriptions. Native form reset is synchronized back to
+the store.
+
+## Rendering selected state
+
+`useSelector`, `shallowEqual`, and the rest of `gw-store@0.2.0` are re-exported.
 
 ```tsx
-import { useStoreComponent } from "dn-react-input";
+import { createRender, useSelector } from "react-store-input";
 
-function Component() {
-    ...
-    const component = useStoreComponent(store);
+const email = useSelector(store, (state) => state.email);
 
-    return (
-        <form>
-            <component.input name="email" type="email" />
-            <component.input name="password" type="password" />
-            <component.input name="rememberMe" type="checkbox" />
-        </form>
-    );
-}
+return (
+  <>
+    <p>{email}</p>
+    {createRender(store, (state) => <p>{state.password.length} characters</p>)}
+    {form.render((state) => <p>{state.rememberMe ? "Remember" : "Forget"}</p>)}
+  </>
+);
 ```
 
-`useFormStore` is a facade that combines `useStore` and `useStoreInput` for convenience.
+## Custom controls
+
+Use `useStoreInput` for custom elements that expose a normal form-control DOM
+node. The ref is deliberately explicit.
 
 ```tsx
-import { useFormStore } from "dn-react-input";
+import { useRef } from "react";
+import { useStoreInput, type Store } from "react-store-input";
 
-function Component() {
-    ...
-    const store = useFormStore({
-        email: "",
-        password: "",
-        rememberMe: false,
-    });
-
-    return (
-        <form>
-            <store.input name="email" type="email" />
-            <store.input name="password" type="password" />
-            <store.input name="rememberMe" type="checkbox" />
-        </form>
-    );
-}
-```
-
-## How to render components on state changes?
-
-If you want to render a component only when specific parts of the state change, use the `useSelector` hook.
-
-```tsx
-import { useSelector } from "dn-react-input";
-
-function Component() {
-    ...
-    const email = useSelector(store, (state) => state.email);
-
-    return <div>Your email is: {email}</div>;
-}
-```
-
-If you want to render components in an inline manner, use the `createRender` function. By using this, you can avoid creating separate components for each part of the state you want to track.
-
-```tsx
-import { createRender } from "dn-react-input";
-
-function Component() {
-    ...
-    return (
-        <div>
-            {createRender(store, (state) => <p>{state.email}</p>)}
-            {createRender(store, (state) => <p>{state.password}</p>)}
-        </div>
-    );
-}
-```
-
-`Store.render` is a shortcut for `createRender` when you use `useFormStore`.
-
-```tsx
-function Component() {
-  const store = useFormStore({
-    email: "",
-    password: "",
-  });
-
-  return (
-    <div>
-      {store.render((state) => (
-        <p>{state.email}</p>
-      ))}
-      {store.render((state) => (
-        <p>{state.password}</p>
-      ))}
-    </div>
-  );
-}
-```
-
-## How to subscribe to state changes?
-
-You can subscribe to state changes using the `subscribe` method of the store.
-
-```tsx
-function Component() {
-    ...
-    useEffect(() => {
-        const unsubscribe = store.subscribe((state) => {
-            console.log(`State changed`, state);
-        });
-
-        return () => {
-            unsubscribe();
-        };
-    }, []);
-
-    ...
-}
-```
-
-## How to update state manually?
-
-You can update the state manually using the `dispatch` method of the store.
-
-```tsx
-function Component() {
-    ...
-    const updateEmail = () => {
-        store.dispatch({ email: "ohjinsu98@icloud.com" });
-    };
-
-    return <button onClick={updateEmail}>Update Email</button>;
-}
-```
-
-The `dispatch` method uses immerjs internally to update the state, so you can also use a function to update the state based on the previous state.
-
-```tsx
-function Component() {
-    ...
-
-    const updateEmail = () => {
-        store.dispatch((state) => {
-            state.email = "ohjinsu98@icloud.com";
-        });
-    };
-
-    return <button onClick={updateEmail}>Update Email</button>;
-}
-```
-
-## How to create custom input components?
-
-You can create custom input components using the `useStoreInput` hook. This hook provides the necessary props to connect your custom input component to the store: `name`, `value`, `defaultValue`, `defaultChecked`, `onChange`, and `ref` which already subscribed to the store.
-
-```tsx
-import { useStoreInput } from "dn-react-input";
-
-function CustomInput({ store }: { store: Store<{ email: string }> }) {
-  const inputProps = useStoreInput(store, {
-    name: "email",
-  });
-
-  return <input {...inputProps} />;
-}
-```
-
-## How to creatre custom controller components?
-
-If your custom component is not an html input element, you can use the `useStoreController` hook. This hook provides the necessary props to connect your custom controller component to the store: `ref`, `onSubscribe`, and `onDispatch`.
-
-```tsx
-import { useStoreController } from "dn-react-input";
-
-type State = {
-  count: number;
-};
-
-function CustomController({ store }: { store: Store<State> }) {
-  const controllerProps = useStoreController<HTMLDivElement, State>(store, {
-    onSubscribe: (state, element) => {
-      element.textContent = `Count: ${state.count}`;
-    },
-    onDispatch: (state, element) => {
-      state.count += Number(element.textContent.replace("Count: ", ""));
+function EmailInput({ store }: { store: Store<{ email: string }> }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const inputProps = useStoreInput(ref, store, {
+    getter: (state) => state.email,
+    setter: (state, value) => {
+      state.email = value;
     },
   });
 
-  return <div {...controllerProps} />;
+  return <input ref={ref} type="email" {...inputProps} />;
 }
+```
+
+For non-input controllers, call the returned `dispatch` when the controller
+changes:
+
+```tsx
+import { useStoreController } from "react-store-input";
+
+function Counter({ store }: { store: Store<{ count: number }> }) {
+  const { dispatch } = useStoreController(store, {
+    onSubscribe: () => {},
+    onDispatch: (state) => {
+      state.count += 1;
+    },
+  });
+
+  return <button onClick={dispatch}>Increment</button>;
+}
+```
+
+## Optional text editor
+
+The ProseMirror-based editor is a separate entry point so normal forms do not
+download or bundle editor dependencies. It requires React 19 and an explicit
+optional peer installation:
+
+```sh
+npm install gw-react-text-editor
+```
+
+```tsx
+import { TextEditor } from "react-store-input/text-editor";
+
+<TextEditor store={store} name="content" />;
+```
+
+## Development
+
+```sh
+npm run typecheck
+npm test
+npm pack --dry-run
 ```

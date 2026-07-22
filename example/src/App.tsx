@@ -1,11 +1,21 @@
-import { useFormStore } from "react-store-input";
+import { useEffect } from "react";
+import { createRender, useFormStore } from "react-store-input";
 
 export default function App() {
   const store = useFormStore({
     email: "",
     password: "",
     rememberMe: false,
+    role: "user" as "admin" | "user",
   });
+
+  useEffect(() => {
+    const unsubscribe = store.subscribe((state) => {
+      console.log("State changed:", state);
+    });
+
+    return unsubscribe;
+  }, [store]);
 
   const submit = async () => {
     const { email, password } = store.state;
@@ -22,15 +32,14 @@ export default function App() {
     >
       <store.input name="email" type="email" />
       <store.input name="password" type="password" />
-      <store.select
-        name="rememberMe"
-        toInputValue={(value) => (value ? "true" : "false")}
-        toStateValue={(value) => value === "true"}
-      >
-        <option value="true">Remember Me</option>
-        <option value="false">Don't Remember Me</option>
-      </store.select>
+      <store.input name="rememberMe" type="checkbox" /> Remember Me
+      <store.input name="role" type="radio" value="admin" /> Admin
+      <store.input name="role" type="radio" value="user" /> User
       <button type="submit">Submit</button>
+      <button type="reset">Reset</button>
+      {createRender(store, (state) => (
+        <pre>{JSON.stringify(state, null, 2)}</pre>
+      ))}
     </form>
   );
 }

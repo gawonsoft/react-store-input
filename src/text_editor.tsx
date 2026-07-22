@@ -4,17 +4,21 @@ import {
   type TextEditorProps as GwTextEditorProps,
 } from "gw-react-text-editor";
 import { useImperativeHandle, useRef } from "react";
+import type { Draft, Immutable } from "immer";
 import type { Store } from "gw-store";
 import { useStoreController } from "./use_store_controller";
 
-export type TextEditorProps<TState> = {
+export type TextEditorProps<TState extends object> = Omit<
+  GwTextEditorProps,
+  "name"
+> & {
   store: Store<TState>;
   name?: keyof TState;
-  getter?: (state: TState) => string;
-  setter?: (state: TState, value: string) => void;
-} & GwTextEditorProps;
+  getter?: (state: Immutable<TState>) => string;
+  setter?: (state: Draft<TState>, value: string) => void;
+};
 
-export function TextEditor<TState>({
+export function TextEditor<TState extends object>({
   store,
   name,
   getter,
@@ -44,7 +48,7 @@ export function TextEditor<TState>({
           return getter(state) || "";
         }
 
-        if (name) {
+        if (name !== undefined) {
           return (state[name as never] as unknown as string) || "";
         }
 
@@ -69,7 +73,7 @@ export function TextEditor<TState>({
         return;
       }
 
-      if (name) {
+      if (name !== undefined) {
         state[name as never] = controller.value as unknown as never;
       }
     },
@@ -80,7 +84,7 @@ export function TextEditor<TState>({
       return getter(store.state);
     }
 
-    if (name) {
+    if (name !== undefined) {
       return store.state[name as never] as unknown as string;
     }
 
@@ -91,6 +95,7 @@ export function TextEditor<TState>({
     <GwTextEditor
       {...props}
       ref={controllerRef}
+      name={name === undefined ? undefined : String(name)}
       defaultValue={defaultValue ?? getDefaultValue()}
       onChange={(e) => {
         dispatch();
