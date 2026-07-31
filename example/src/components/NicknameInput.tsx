@@ -4,9 +4,9 @@ import {
   defineCodec,
   ok,
   stateLens,
-  useStoreInput,
-  type Store,
+  useStoreHTMLElement,
 } from "react-store-input";
+import type { Store } from "gw-store";
 import type { DemoState } from "../demo/state";
 
 const nicknameBinding = defineBinding({
@@ -19,7 +19,7 @@ const nicknameBinding = defineBinding({
 
 export function NicknameInput({ store }: { store: Store<DemoState> }) {
   const ref = useRef<HTMLInputElement>(null);
-  const { inputProps } = useStoreInput(ref, store, nicknameBinding);
+  const { inputProps } = useStoreHTMLElement(ref, store, nicknameBinding);
 
   return <input ref={ref} {...inputProps} />;
 }

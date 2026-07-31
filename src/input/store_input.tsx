@@ -1,37 +1,28 @@
 import {
   useCallback,
   useRef,
+  type ReactElement,
   type InputHTMLAttributes,
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from "react";
 import type { Store } from "gw-store";
-import {
-  useStoreInputWithName,
-  type StoreInputWithNameProps,
-} from "../input/use_store_input_with_name";
+import { useStoreInputWithName, type StoreInputWithNameProps } from "../html_element/use_store_input_with_name";
 
-type StoreElement =
-  | HTMLInputElement
-  | HTMLSelectElement
-  | HTMLTextAreaElement;
+type StoreElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
-type ElementAttributes<TElement extends StoreElement> =
-  TElement extends HTMLInputElement
-    ? InputHTMLAttributes<HTMLInputElement>
-    : TElement extends HTMLSelectElement
-      ? SelectHTMLAttributes<HTMLSelectElement>
-      : TextareaHTMLAttributes<HTMLTextAreaElement>;
+type ElementAttributes<TElement extends StoreElement> = TElement extends HTMLInputElement
+  ? InputHTMLAttributes<HTMLInputElement>
+  : TElement extends HTMLSelectElement
+    ? SelectHTMLAttributes<HTMLSelectElement>
+    : TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 export type StoreInputWithNameComponentProps<
   TElement extends StoreElement,
   TState extends object,
   TName extends keyof TState,
 > = StoreInputWithNameProps<TElement, TState, TName> &
-  Omit<
-    ElementAttributes<TElement>,
-    keyof StoreInputWithNameProps<TElement, TState, TName>
-  >;
+  Omit<ElementAttributes<TElement>, keyof StoreInputWithNameProps<TElement, TState, TName>>;
 
 export type StoreComponentPropsWithStore<
   TElement extends StoreElement,
@@ -39,6 +30,18 @@ export type StoreComponentPropsWithStore<
   TName extends keyof TState,
 > = StoreInputWithNameComponentProps<TElement, TState, TName> & {
   store: Store<TState>;
+};
+
+export type StoreComponents<TState extends object> = {
+  input: <TName extends keyof TState>(
+    props: StoreInputWithNameComponentProps<HTMLInputElement, TState, TName>,
+  ) => ReactElement | null;
+  select: <TName extends keyof TState>(
+    props: StoreInputWithNameComponentProps<HTMLSelectElement, TState, TName>,
+  ) => ReactElement | null;
+  textarea: <TName extends keyof TState>(
+    props: StoreInputWithNameComponentProps<HTMLTextAreaElement, TState, TName>,
+  ) => ReactElement | null;
 };
 
 export function Input<TState extends object, TName extends keyof TState>({
@@ -71,14 +74,10 @@ export function Textarea<TState extends object, TName extends keyof TState>({
   return <textarea ref={ref} {...props} {...storeProps} />;
 }
 
-export function useStoreComponent<TState extends object>(store: Store<TState>) {
+export function useStoreInput<TState extends object>(store: Store<TState>): StoreComponents<TState> {
   const input = useCallback(
     function Component<TName extends keyof TState>(
-      props: StoreInputWithNameComponentProps<
-        HTMLInputElement,
-        TState,
-        TName
-      >,
+      props: StoreInputWithNameComponentProps<HTMLInputElement, TState, TName>,
     ) {
       return <Input store={store} {...props} />;
     },
@@ -87,11 +86,7 @@ export function useStoreComponent<TState extends object>(store: Store<TState>) {
 
   const select = useCallback(
     function Component<TName extends keyof TState>(
-      props: StoreInputWithNameComponentProps<
-        HTMLSelectElement,
-        TState,
-        TName
-      >,
+      props: StoreInputWithNameComponentProps<HTMLSelectElement, TState, TName>,
     ) {
       return <Select store={store} {...props} />;
     },
@@ -100,11 +95,7 @@ export function useStoreComponent<TState extends object>(store: Store<TState>) {
 
   const textarea = useCallback(
     function Component<TName extends keyof TState>(
-      props: StoreInputWithNameComponentProps<
-        HTMLTextAreaElement,
-        TState,
-        TName
-      >,
+      props: StoreInputWithNameComponentProps<HTMLTextAreaElement, TState, TName>,
     ) {
       return <Textarea store={store} {...props} />;
     },

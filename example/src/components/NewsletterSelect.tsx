@@ -4,9 +4,9 @@ import {
   defineCodec,
   ok,
   stateLens,
-  useStoreInput,
-  type Store,
+  useStoreHTMLElement,
 } from "react-store-input";
+import type { Store } from "gw-store";
 import type { DemoState } from "../demo/state";
 
 const newsletterBinding = defineBinding({
@@ -19,7 +19,11 @@ const newsletterBinding = defineBinding({
 
 export function NewsletterSelect({ store }: { store: Store<DemoState> }) {
   const ref = useRef<HTMLSelectElement>(null);
-  const { inputProps } = useStoreInput(ref, store, newsletterBinding);
+  const { inputProps } = useStoreHTMLElement(
+    ref,
+    store,
+    newsletterBinding,
+  );
 
   return (
     <select ref={ref} {...inputProps}>

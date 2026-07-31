@@ -7,15 +7,18 @@ import {
   err,
   ok,
   stateLens,
-  useFormStore,
-  useSelector,
-  useStore,
+  useStoreHTMLElement,
   useStoreInput,
 } from "react-store-input";
 import { TextEditor } from "react-store-input/text-editor";
 import { useRef } from "react";
+import { useSelector, useStore } from "gw-store";
 // @ts-expect-error StoreInputProps was removed in 0.4.0.
 import type { StoreInputProps } from "react-store-input";
+// @ts-expect-error useFormStore was removed in 0.5.0.
+import { useFormStore } from "react-store-input";
+// @ts-expect-error useStoreComponent was renamed in 0.5.0.
+import { useStoreComponent } from "react-store-input";
 
 function TypeExample() {
   const store = useStore({
@@ -23,7 +26,10 @@ function TypeExample() {
     count: 0 as number | undefined,
     profile: { nickname: "" },
   });
-  const form = useFormStore({ content: "" });
+  const formStore = useStore({ content: "" });
+  const controls = useStoreInput(formStore);
+  // @ts-expect-error useStoreInput binds an existing gw-store Store.
+  useStoreInput({ content: "" });
 
   const email = useSelector(store, (state) => state.email);
   const nicknameBinding = defineBinding({
@@ -35,9 +41,13 @@ function TypeExample() {
     }),
   });
   const nicknameRef = useRef<HTMLInputElement>(null);
-  const nicknameField = useStoreInput(nicknameRef, store, nicknameBinding);
+  const nicknameField = useStoreHTMLElement(
+    nicknameRef,
+    store,
+    nicknameBinding,
+  );
   // @ts-expect-error Legacy mapping objects are no longer accepted.
-  useStoreInput(nicknameRef, store, {});
+  useStoreHTMLElement(nicknameRef, store, {});
   const nicknameError = nicknameField.meta.valid
     ? undefined
     : nicknameField.meta.error;
@@ -48,7 +58,8 @@ function TypeExample() {
       <Input store={store} name="email" type="email" />
       <Input store={store} name="count" type="number" />
       <Textarea store={store} name="email" rows={4} wrap="soft" />
-      <TextEditor store={form} name="content" />
+      <TextEditor store={formStore} name="content" />
+      <controls.textarea name="content" />
       <input
         ref={nicknameRef}
         {...nicknameField.inputProps}
@@ -79,3 +90,5 @@ defineBinding({ lens: nicknameLens, codec: numberCodec });
 
 void TypeExample;
 void (undefined as unknown as StoreInputProps);
+void useFormStore;
+void useStoreComponent;

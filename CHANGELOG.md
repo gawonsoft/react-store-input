@@ -5,7 +5,22 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.5.0] - 2026-07-31
+
+### Changed
+
+- Renamed `useStoreComponent` to `useStoreInput`. It accepts an existing
+  `gw-store` `Store` and returns bound `input`, `select`, and `textarea`
+  components.
+- Renamed the low-level DOM binding hook from `useStoreInput` to
+  `useStoreHTMLElement`.
+- Removed `gw-store` API re-exports. Import stores, selectors, and their types
+  directly from `gw-store`.
+
+### Removed
+
+- Removed the deprecated `useFormStore`, `FormStore`, and `FormComponents`
+  APIs.
 
 ## [0.4.0] - 2026-07-22
 

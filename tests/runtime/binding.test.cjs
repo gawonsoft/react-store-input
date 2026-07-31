@@ -8,7 +8,7 @@ const {
   err,
   ok,
   stateLens,
-  useStoreInput,
+  useStoreHTMLElement,
 } = require("../../dist/index.js");
 const {
   React,
@@ -46,10 +46,10 @@ test("generated lenses and codecs satisfy their round-trip laws", () => {
 });
 
 test("binding parse errors preserve store state and expose metadata", async () => {
-  const store = await mount({ form: { amount: 5 }, revision: 0 }, (formStore) => {
+  const store = await mount({ form: { amount: 5 }, revision: 0 }, (_form, store) => {
     function BoundInput() {
       const ref = React.useRef(null);
-      const field = useStoreInput(ref, formStore, amountBinding);
+      const field = useStoreHTMLElement(ref, store, amountBinding);
 
       return React.createElement(
         "form",

@@ -1,4 +1,5 @@
-import { Input, type FormStore } from "react-store-input";
+import type { Store } from "gw-store";
+import { Input } from "react-store-input";
 import { Field } from "../components/Field";
 import { NicknameInput } from "../components/NicknameInput";
 import { RevisionController } from "../components/RevisionController";
@@ -8,7 +9,7 @@ import type { DemoState } from "../demo/state";
 export function CustomBindingsSection({
   store,
 }: {
-  store: FormStore<DemoState>;
+  store: Store<DemoState>;
 }) {
   return (
     <Section

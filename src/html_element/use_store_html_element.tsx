@@ -70,7 +70,7 @@ function readControlValue(
   return readElementValue(element);
 }
 
-export function useStoreInput<
+export function useStoreHTMLElement<
   TInputElement extends StoreElement,
   TState extends object,
   TValue,

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from "react";
-import type { Store } from "react-store-input";
+import type { Store } from "gw-store";
 import { Section } from "../components/Section";
 import type { DemoState } from "../demo/state";
 

@@ -1,4 +1,4 @@
-import { useSelector, type Store } from "react-store-input";
+import { useSelector, type Store } from "gw-store";
 import type { DemoState } from "../demo/state";
 
 export function StatePanel({

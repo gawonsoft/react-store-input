@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useFormStore } from "react-store-input";
+import { useStore } from "gw-store";
+import { useStoreInput } from "react-store-input";
 import { Hero } from "./components/Hero";
 import { StatePanel } from "./components/StatePanel";
 import { Toolbar } from "./components/Toolbar";
@@ -12,7 +13,8 @@ import { NumbersDatesSection } from "./sections/NumbersDatesSection";
 import { TextInputsSection } from "./sections/TextInputsSection";
 
 export default function App() {
-  const store = useFormStore(INITIAL_STATE);
+  const store = useStore(INITIAL_STATE);
+  const controls = useStoreInput(store);
   const [notificationCount, setNotificationCount] = useState(0);
   const [submittedAt, setSubmittedAt] = useState<string>();
 
@@ -55,11 +57,11 @@ export default function App() {
             onApplyPreset={applyPreset}
           />
 
-          <store.input name="formId" type="hidden" />
-          <TextInputsSection store={store} />
-          <NumbersDatesSection store={store} />
-          <ChoicesSection store={store} />
-          <LongFormSection store={store} />
+          <controls.input name="formId" type="hidden" />
+          <TextInputsSection controls={controls} />
+          <NumbersDatesSection store={store} controls={controls} />
+          <ChoicesSection store={store} controls={controls} />
+          <LongFormSection store={store} controls={controls} />
           <CustomBindingsSection store={store} />
           <EditorSection store={store} />
         </div>

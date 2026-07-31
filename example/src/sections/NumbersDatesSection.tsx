@@ -1,10 +1,17 @@
-import { createRender, type FormStore } from "react-store-input";
+import type { Store } from "gw-store";
+import { createRender, type StoreComponents } from "react-store-input";
 import { CurrencyInput } from "../components/CurrencyInput";
 import { Field } from "../components/Field";
 import { Section } from "../components/Section";
 import type { DemoState } from "../demo/state";
 
-export function NumbersDatesSection({ store }: { store: FormStore<DemoState> }) {
+export function NumbersDatesSection({
+  store,
+  controls,
+}: {
+  store: Store<DemoState>;
+  controls: StoreComponents<DemoState>;
+}) {
   return (
     <Section
       number="02"
@@ -12,37 +19,42 @@ export function NumbersDatesSection({ store }: { store: FormStore<DemoState> }) 
       description="Built-in conversion produces numbers, Date instances, or undefined for empty values."
     >
       <Field label="Number" hint="number | undefined">
-        <store.input name="quantity" type="number" min={0} max={20} />
+        <controls.input name="quantity" type="number" min={0} max={20} />
       </Field>
       <Field label="Custom currency input" hint="Lens + Codec + Result">
         <CurrencyInput store={store} />
       </Field>
       <Field label="Range" hint="number" wide>
         <div className="range-row">
-          <store.input name="satisfaction" type="range" min={0} max={100} />
-          {store.render((state) => (
+          <controls.input
+            name="satisfaction"
+            type="range"
+            min={0}
+            max={100}
+          />
+          {createRender(store, (state) => (
             <output>{state.satisfaction}%</output>
           ))}
         </div>
       </Field>
       <Field label="Date" hint="string">
-        <store.input name="startDate" type="date" />
+        <controls.input name="startDate" type="date" />
       </Field>
       <Field label="Time" hint="string">
-        <store.input name="appointmentTime" type="time" />
+        <controls.input name="appointmentTime" type="time" />
       </Field>
       <Field label="Date and time" hint="Date | undefined">
-        <store.input name="meetingAt" type="datetime-local" />
+        <controls.input name="meetingAt" type="datetime-local" />
       </Field>
       <Field label="Month" hint="string">
-        <store.input name="billingMonth" type="month" />
+        <controls.input name="billingMonth" type="month" />
       </Field>
       <Field label="Week" hint="string">
-        <store.input name="sprintWeek" type="week" />
+        <controls.input name="sprintWeek" type="week" />
       </Field>
       <Field label="Color" hint="string">
         <div className="color-row">
-          <store.input name="accentColor" type="color" />
+          <controls.input name="accentColor" type="color" />
           {createRender(store, (state) => (
             <code>{state.accentColor}</code>
           ))}

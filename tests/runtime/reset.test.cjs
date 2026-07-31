@@ -1,5 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
+const { createRender } = require("../../dist/index.js");
 const {
   React,
   act,
@@ -15,7 +16,7 @@ test("synchronizes native form reset back to the store", async () => {
     rememberMe: false,
     role: "user",
   };
-  const store = await mount(initialState, (form) =>
+  const store = await mount(initialState, (form, store) =>
     React.createElement(
       React.Fragment,
       null,
@@ -40,7 +41,7 @@ test("synchronizes native form reset back to the store", async () => {
         }),
         React.createElement("button", { type: "reset" }, "Reset"),
       ),
-      form.render((state) =>
+      createRender(store, (state) =>
         React.createElement("pre", null, JSON.stringify(state)),
       ),
     ),
@@ -92,7 +93,7 @@ test("resets bound fields from a reset button without an onReset handler", async
     rememberMe: false,
     interests: ["typescript"],
   };
-  const store = await mount(initialState, (form) =>
+  const store = await mount(initialState, (form, store) =>
     React.createElement(
       "form",
       null,
@@ -227,7 +228,7 @@ test("supports a full-store reset handler without duplicate notifications", asyn
   const store = await mount(initialState, (form) =>
     React.createElement(
       "form",
-      { onReset: () => form.dispatch(initialState) },
+      { onReset: () => store.dispatch(initialState) },
       React.createElement(form.input, { name: "email" }),
       React.createElement("button", { type: "reset" }, "Reset all"),
     ),

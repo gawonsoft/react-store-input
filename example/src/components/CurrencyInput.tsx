@@ -5,9 +5,9 @@ import {
   err,
   ok,
   stateLens,
-  useStoreInput,
-  type Store,
+  useStoreHTMLElement,
 } from "react-store-input";
+import type { Store } from "gw-store";
 import type { DemoState } from "../demo/state";
 
 type BudgetError = {
@@ -38,7 +38,9 @@ const budgetBinding = defineBinding({
 
 export function CurrencyInput({ store }: { store: Store<DemoState> }) {
   const ref = useRef<HTMLInputElement>(null);
-  const field = useStoreInput(ref, store, budgetBinding, { type: "text" });
+  const field = useStoreHTMLElement(ref, store, budgetBinding, {
+    type: "text",
+  });
 
   return (
     <div className="binding-input">

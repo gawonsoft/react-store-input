@@ -6,7 +6,7 @@ The Vite example is an interactive capability map for the package. It covers:
 - number, range, date, time, datetime-local, month, and week conversion;
 - checkbox, radio, select, boolean conversion, and multiple select;
 - store-bound and standalone `Input`, `Select`, and `Textarea` components;
-- nested and converted custom `useStoreInput` components built from typed
+- nested and converted custom `useStoreHTMLElement` components built from typed
   lenses, codecs, bindings, and `gw-result` parse errors;
 - a custom `useStoreController`, `useSelector`, `createRender`, and `batch`;
 - native form reset synchronized back to live JSON state without an explicit

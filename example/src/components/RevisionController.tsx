@@ -1,8 +1,5 @@
-import {
-  useSelector,
-  useStoreController,
-  type Store,
-} from "react-store-input";
+import { useSelector, type Store } from "gw-store";
+import { useStoreController } from "react-store-input";
 import type { DemoState } from "../demo/state";
 
 export function RevisionController({ store }: { store: Store<DemoState> }) {

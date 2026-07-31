@@ -2,7 +2,7 @@ import { useMemo, type RefObject } from "react";
 import { ok } from "gw-result";
 import type { Store } from "gw-store";
 import type { InputBinding } from "../binding/binding";
-import { useStoreInput } from "./use_store_input";
+import { useStoreHTMLElement } from "./use_store_html_element";
 import type {
   InputControlValue,
   InputStateValue,
@@ -95,7 +95,7 @@ export function useStoreInputWithName<
     initialStateValue,
     (value) => parseControlValue<TValue>(value, props.type),
   );
-  const { inputProps } = useStoreInput(ref, store, binding, {
+  const { inputProps } = useStoreHTMLElement(ref, store, binding, {
     ...props,
     resetValue,
   });

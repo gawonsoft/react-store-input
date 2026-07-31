@@ -13,10 +13,11 @@ npm install react-store-input
 ## Quick start
 
 ```tsx
-import { useFormStore } from "react-store-input";
+import { useStore } from "gw-store";
+import { Input } from "react-store-input";
 
 export default function LoginForm() {
-  const form = useFormStore({
+  const store = useStore({
     email: "",
     password: "",
     rememberMe: false,
@@ -26,28 +27,28 @@ export default function LoginForm() {
     <form
       onSubmit={(event) => {
         event.preventDefault();
-        console.log(form.state);
+        console.log(store.state);
       }}
     >
-      <form.input name="email" type="email" />
-      <form.input name="password" type="password" />
-      <form.input name="rememberMe" type="checkbox" />
+      <Input store={store} name="email" type="email" />
+      <Input store={store} name="password" type="password" />
+      <Input store={store} name="rememberMe" type="checkbox" />
       <button type="submit">Sign in</button>
     </form>
   );
 }
 ```
 
-`useFormStore` returns the complete `gw-store` API (`state`, `dispatch`,
-`batch`, and `subscribe`) together with stable `input`, `select`, `textarea`,
-and `render` helpers.
+Create and own stores with `gw-store`. This package only binds that store to
+input controls.
 
 ## Components
 
 You can use the standalone components when the store is passed from elsewhere:
 
 ```tsx
-import { Input, Select, Textarea, useStore } from "react-store-input";
+import { useStore } from "gw-store";
+import { Input, Select, Textarea } from "react-store-input";
 
 const store = useStore({ role: "user", bio: "" });
 
@@ -60,8 +61,23 @@ const store = useStore({ role: "user", bio: "" });
 <Textarea store={store} name="bio" rows={5} />;
 ```
 
+When passing `store` to every control would be repetitive, `useStoreInput`
+returns stable components already bound to an existing store:
+
+```tsx
+import { useStore } from "gw-store";
+import { useStoreInput } from "react-store-input";
+
+const store = useStore({ role: "user", bio: "" });
+const controls = useStoreInput(store);
+
+<controls.input name="role" />;
+<controls.select name="role">...</controls.select>;
+<controls.textarea name="bio" />;
+```
+
 A named `Input`, `Select`, or `Textarea` requires a valid top-level state key.
-Use `useStoreInput` with a typed binding for nested or converted values.
+Use `useStoreHTMLElement` with a typed binding for nested or converted values.
 
 ## Value conversion
 
@@ -132,10 +148,11 @@ codec implementations.
 
 ## Rendering selected state
 
-`useSelector`, `shallowEqual`, and the rest of `gw-store@0.2.0` are re-exported.
+Use `gw-store` selectors with this package's rendering helper.
 
 ```tsx
-import { createRender, useSelector } from "react-store-input";
+import { useSelector } from "gw-store";
+import { createRender } from "react-store-input";
 
 const email = useSelector(store, (state) => state.email);
 
@@ -143,25 +160,30 @@ return (
   <>
     <p>{email}</p>
     {createRender(store, (state) => <p>{state.password.length} characters</p>)}
-    {form.render((state) => <p>{state.rememberMe ? "Remember" : "Forget"}</p>)}
+    {createRender(store, (state) => (
+      <p>{state.rememberMe ? "Remember" : "Forget"}</p>
+    ))}
   </>
 );
 ```
 
 ## Custom controls
 
-Use `useStoreInput` with a binding for custom elements that expose a normal
+Use `useStoreHTMLElement` with a binding for custom elements that expose a normal
 form-control DOM node. The ref is deliberately explicit. A parse failure keeps
 the last valid store value, preserves the user's raw input, and exposes the
 typed error through `meta`.
 
 ```tsx
 import { useRef } from "react";
-import { useStoreInput, type Store } from "react-store-input";
+import type { Store } from "gw-store";
+import { useStoreHTMLElement } from "react-store-input";
 
 function BudgetInput({ store }: { store: Store<FormState> }) {
   const ref = useRef<HTMLInputElement>(null);
-  const field = useStoreInput(ref, store, budgetBinding, { type: "text" });
+  const field = useStoreHTMLElement(ref, store, budgetBinding, {
+    type: "text",
+  });
 
   return (
     <label>
@@ -204,6 +226,7 @@ For non-input controllers, call the returned `dispatch` when the controller
 changes:
 
 ```tsx
+import type { Store } from "gw-store";
 import { useStoreController } from "react-store-input";
 
 function Counter({ store }: { store: Store<{ count: number }> }) {
@@ -244,8 +267,8 @@ Source code is grouped by responsibility:
 ```text
 src/
 ├─ binding/ Lens, Codec, Binding, and law assertions
-├─ input/   DOM value conversion, reset coordination, and input hooks
-├─ form/    bound components and useFormStore composition
+├─ input/   DOM value conversion, reset coordination, and element hooks
+├─ form/    standalone and store-bound input components
 ├─ store/   controller and render helpers
 └─ editor/  optional text-editor integration
 

@@ -8,15 +8,18 @@ const core = require(path.join(root, "dist/index.js"));
 const editor = require(path.join(root, "dist/text-editor.js"));
 const coreSource = fs.readFileSync(path.join(root, "dist/index.js"), "utf8");
 
-assert.equal(manifest.version, "0.4.0");
+assert.equal(manifest.version, "0.5.0");
 assert.equal(manifest.dependencies["gw-store"], "0.2.0");
 assert.equal(manifest.dependencies["gw-result"], "0.3.0");
 assert.equal(manifest.main, "./dist/index.js");
 assert.equal(manifest.module, "./dist/index.mjs");
 assert.equal(manifest.peerDependenciesMeta["gw-react-text-editor"].optional, true);
-assert.equal(typeof core.useFormStore, "function");
+assert.equal(core.useFormStore, undefined);
+assert.equal(core.useStoreComponent, undefined);
+assert.equal(typeof core.useStoreInput, "function");
+assert.equal(typeof core.useStoreHTMLElement, "function");
 assert.equal(typeof core.createRender, "function");
-assert.equal(typeof core.useStore, "function");
+assert.equal(core.useStore, undefined);
 assert.equal(typeof core.defineBinding, "function");
 assert.equal(typeof core.defineCodec, "function");
 assert.equal(typeof core.stateLens, "function");
@@ -31,6 +34,8 @@ async function checkEsm() {
   const esmEditor = await import("react-store-input/text-editor");
 
   assert.equal(typeof esmCore.createRender, "function");
+  assert.equal(typeof esmCore.useStoreInput, "function");
+  assert.equal(typeof esmCore.useStoreHTMLElement, "function");
   assert.equal(typeof esmCore.defineBinding, "function");
   assert.equal(typeof esmCore.ok, "function");
   assert.equal(esmCore.TextEditor, undefined);

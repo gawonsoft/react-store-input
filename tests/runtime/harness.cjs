@@ -2,7 +2,8 @@ const { afterEach, beforeEach } = require("node:test");
 const { JSDOM } = require("jsdom");
 const React = require("react");
 const { act } = React;
-const { useFormStore } = require("../../dist/index.js");
+const { useStoreInput } = require("../../dist/index.js");
+const { useStore } = require("gw-store");
 
 let dom;
 let container;
@@ -44,8 +45,8 @@ async function mount(initialState, render) {
   let store;
 
   function App() {
-    store = useFormStore(initialState);
-    return render(store);
+    store = useStore(initialState);
+    return render(useStoreInput(store), store);
   }
 
   await act(async () => root.render(React.createElement(App)));
