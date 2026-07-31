@@ -23,7 +23,7 @@ export function CustomBindingsSection({
       <Field label="Nested nickname" hint="stateLens + Codec">
         <NicknameInput store={store} />
       </Field>
-      <Field label="Custom controller" hint="useStoreController" wide>
+      <Field label="Custom controller" hint="store.dispatch" wide>
         <RevisionController store={store} />
       </Field>
     </Section>

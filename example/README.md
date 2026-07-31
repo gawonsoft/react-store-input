@@ -8,7 +8,7 @@ The Vite example is an interactive capability map for the package. It covers:
 - store-bound and standalone `Input`, `Select`, and `Textarea` components;
 - nested and converted custom `useStoreHTMLElement` components built from typed
   lenses, codecs, bindings, and `gw-result` parse errors;
-- a custom `useStoreController`, `useSelector`, `createRender`, and `batch`;
+- direct `store.dispatch`, `useSelector`, `createRender`, and `batch`;
 - native form reset synchronized back to live JSON state without an explicit
   `onReset` handler;
 - the optional lazy-loaded `react-store-input/text-editor` entry point.

@@ -12,11 +12,7 @@ export function isFormResetting(form: HTMLFormElement) {
   return resettingForms.has(form);
 }
 
-export function registerResetBinding(
-  form: HTMLFormElement,
-  batch: ResetBatch,
-  reset: () => void,
-) {
+export function registerResetBinding(form: HTMLFormElement, batch: ResetBatch, reset: () => void) {
   let coordinator = resetCoordinators.get(form);
 
   if (!coordinator) {
@@ -26,10 +22,7 @@ export function registerResetBinding(
 
       // React reset handlers may render and re-register bindings before the
       // browser completes the native reset default action.
-      const groupSnapshots = Array.from(groups, ([groupBatch, bindings]) => [
-        groupBatch,
-        [...bindings],
-      ] as const);
+      const groupSnapshots = Array.from(groups, ([groupBatch, bindings]) => [groupBatch, [...bindings]] as const);
 
       setTimeout(() => {
         try {

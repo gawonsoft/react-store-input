@@ -1,19 +1,8 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type RefObject,
-} from "react";
-import type { Draft } from "immer";
+import { useCallback, useEffect, useRef, type RefObject } from "react";
 import type { Store } from "gw-store";
 import type { InputBinding } from "../binding/binding";
-import { useStoreController } from "../store/use_store_controller";
-import {
-  equalStateValue,
-  readElementValue,
-  writeElementValue,
-} from "./dom_value";
+import { useStoreBinding } from "../binding/use_store_binding";
+import { readElementValue, writeElementValue } from "./dom_value";
 import { isFormResetting, registerResetBinding } from "./reset_coordinator";
 import type {
   BindingInputResult,
@@ -21,7 +10,6 @@ import type {
   InputDisplayValue,
   StoreInputDomProps,
   StoreInputBindingOptions,
-  StoreInputMeta,
   StoreInputOptions,
 } from "./types";
 import { resolveDefaultChecked, resolveDefaultValue } from "./value_conversion";
@@ -37,10 +25,7 @@ export type {
   StoreInputOptions,
 } from "./types";
 
-type StoreElement =
-  | HTMLInputElement
-  | HTMLTextAreaElement
-  | HTMLSelectElement;
+type StoreElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
 function isDisplayValue(value: InputControlValue): value is InputDisplayValue {
   return (
@@ -84,76 +69,23 @@ export function useStoreHTMLElement<
 ): BindingInputResult<TInputElement, TError> {
   const props: StoreInputOptions<TInputElement> = options;
   const getStateValue = binding.lens.get;
-  const setStoreValue = binding.lens.set;
-  const [meta, setMeta] = useState<StoreInputMeta<TError>>({ valid: true });
-  const metaRef = useRef<StoreInputMeta<TError>>(meta);
 
-  const formatValue = useCallback(
-    (value: TValue): InputControlValue => binding.codec.format(value),
-    [binding],
-  );
-
-  const parseValue = useCallback(
-    (value: InputControlValue) => binding.codec.parse(value as TInput),
-    [binding],
-  );
+  const formatValue = useCallback((value: TValue): InputControlValue => binding.codec.format(value), [binding]);
 
   const toChecked = useCallback(
     (value: TValue) =>
-      props.type === "radio"
-        ? Object.is(formatValue(value), props.value)
-        : Boolean(formatValue(value)),
+      props.type === "radio" ? Object.is(formatValue(value), props.value) : Boolean(formatValue(value)),
     [formatValue, props.type, props.value],
   );
 
   const initialStateValue = getStateValue(store.state);
   const resetValueRef = useRef(
-    Object.prototype.hasOwnProperty.call(options, "resetValue")
-      ? (options.resetValue as TValue)
-      : initialStateValue,
-  );
-
-  const setStateValue = useCallback(
-    (state: Draft<TState>, value: TValue) => {
-      const equals = binding.codec.equals ?? equalStateValue;
-
-      if (equals(getStateValue(store.state), value)) {
-        return;
-      }
-
-      setStoreValue(state, value);
-    },
-    [binding, getStateValue, setStoreValue, store],
-  );
-
-  const commitValue = useCallback(
-    (state: Draft<TState>, controlValue: InputControlValue) => {
-      const result = parseValue(controlValue);
-
-      if (result.isErr) {
-        const invalidMeta: StoreInputMeta<TError> = {
-          valid: false,
-          error: result.error,
-        };
-        metaRef.current = invalidMeta;
-        setMeta(invalidMeta);
-        return;
-      }
-
-      const validMeta: StoreInputMeta<TError> = { valid: true };
-      metaRef.current = validMeta;
-      setMeta((current) => (current.valid ? current : validMeta));
-      setStateValue(state, result.value);
-    },
-    [parseValue, setStateValue],
+    Object.prototype.hasOwnProperty.call(options, "resetValue") ? (options.resetValue as TValue) : initialStateValue,
   );
 
   const writeValue = useCallback(
     (element: TInputElement, value: TValue) => {
-      if (
-        "checked" in element &&
-        (props.type === "checkbox" || props.type === "radio")
-      ) {
+      if ("checked" in element && (props.type === "checkbox" || props.type === "radio")) {
         element.checked = toChecked(value);
         return;
       }
@@ -171,13 +103,12 @@ export function useStoreHTMLElement<
     [formatValue, props.type, toChecked],
   );
 
-  const { dispatch } = useStoreController(store, {
-    onSubscribe: (state) => {
+  const { commit, meta, reset } = useStoreBinding(store, binding, {
+    onStoreChange: (_input, value) => {
       const element = ref.current;
 
       if (
         !element ||
-        !metaRef.current.valid ||
         (element.form && isFormResetting(element.form)) ||
         (props.type !== "radio" && props.value !== undefined)
       ) {
@@ -192,20 +123,7 @@ export function useStoreHTMLElement<
         return;
       }
 
-      writeValue(element, getStateValue(state));
-    },
-    onDispatch: (state) => {
-      const element = ref.current;
-
-      if (!element) {
-        return;
-      }
-
-      const controlValue = readControlValue(element, props.type, props.value);
-
-      if (controlValue !== undefined) {
-        commitValue(state, controlValue);
-      }
+      writeValue(element, value);
     },
   });
 
@@ -226,10 +144,7 @@ export function useStoreHTMLElement<
       const writeResetValue = () => writeValue(element, resetValue);
 
       writeResetValue();
-      const validMeta: StoreInputMeta<TError> = { valid: true };
-      metaRef.current = validMeta;
-      setMeta((current) => (current.valid ? current : validMeta));
-      store.dispatch((state) => setStateValue(state, resetValue));
+      reset(resetValue);
 
       setTimeout(() => {
         if (element.isConnected) {
@@ -237,20 +152,25 @@ export function useStoreHTMLElement<
         }
       }, 0);
     });
-  }, [ref, setStateValue, store, store.batch, writeValue]);
+  }, [ref, reset, store.batch, writeValue]);
 
   const inputProps: StoreInputDomProps<TInputElement> = {
     defaultValue: resolveDefaultValue(props, initialStateValue, (value) => {
       const formatted = formatValue(value);
       return isDisplayValue(formatted) ? formatted : "";
     }),
-    defaultChecked: resolveDefaultChecked(
-      props,
-      initialStateValue,
-      toChecked,
-    ),
+    defaultChecked: resolveDefaultChecked(props, initialStateValue, toChecked),
     onChange: (event) => {
-      dispatch();
+      const element = ref.current;
+
+      if (element) {
+        const controlValue = readControlValue(element, props.type, props.value);
+
+        if (controlValue !== undefined) {
+          commit(controlValue as TInput);
+        }
+      }
+
       props.onChange?.(event);
     },
   };

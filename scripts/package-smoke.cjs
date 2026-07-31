@@ -16,6 +16,8 @@ assert.equal(manifest.module, "./dist/index.mjs");
 assert.equal(manifest.peerDependenciesMeta["gw-react-text-editor"].optional, true);
 assert.equal(core.useFormStore, undefined);
 assert.equal(core.useStoreComponent, undefined);
+assert.equal(core.useStoreController, undefined);
+assert.equal(typeof core.useStoreBinding, "function");
 assert.equal(typeof core.useStoreInput, "function");
 assert.equal(typeof core.useStoreHTMLElement, "function");
 assert.equal(typeof core.createRender, "function");
@@ -34,6 +36,7 @@ async function checkEsm() {
   const esmEditor = await import("react-store-input/text-editor");
 
   assert.equal(typeof esmCore.createRender, "function");
+  assert.equal(typeof esmCore.useStoreBinding, "function");
   assert.equal(typeof esmCore.useStoreInput, "function");
   assert.equal(typeof esmCore.useStoreHTMLElement, "function");
   assert.equal(typeof esmCore.defineBinding, "function");

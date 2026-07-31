@@ -7,6 +7,7 @@ import {
   err,
   ok,
   stateLens,
+  useStoreBinding,
   useStoreHTMLElement,
   useStoreInput,
 } from "react-store-input";
@@ -19,6 +20,8 @@ import type { StoreInputProps } from "react-store-input";
 import { useFormStore } from "react-store-input";
 // @ts-expect-error useStoreComponent was renamed in 0.5.0.
 import { useStoreComponent } from "react-store-input";
+// @ts-expect-error useStoreController was removed in 0.5.0.
+import { useStoreController } from "react-store-input";
 
 function TypeExample() {
   const store = useStore({
@@ -41,6 +44,11 @@ function TypeExample() {
     }),
   });
   const nicknameRef = useRef<HTMLInputElement>(null);
+  const nicknameStoreBinding = useStoreBinding(store, nicknameBinding);
+  const nicknameInitialValue: string = nicknameStoreBinding.initialValue;
+  nicknameStoreBinding.commit("next");
+  // @ts-expect-error Binding input is a string.
+  nicknameStoreBinding.commit(1);
   const nicknameField = useStoreHTMLElement(
     nicknameRef,
     store,
@@ -67,6 +75,7 @@ function TypeExample() {
       />
       <span>{email}</span>
       <span>{nicknameError}</span>
+      <span>{nicknameInitialValue}</span>
       {/* @ts-expect-error Named components require a state key. */}
       <Input store={store} />
       {/* @ts-expect-error Legacy converter props were removed in 0.4.0. */}
@@ -92,3 +101,4 @@ void TypeExample;
 void (undefined as unknown as StoreInputProps);
 void useFormStore;
 void useStoreComponent;
+void useStoreController;

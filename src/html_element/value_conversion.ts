@@ -1,15 +1,8 @@
 import type { HTMLInputTypeAttribute } from "react";
 import { formatDateTimeLocal } from "./dom_value";
-import type {
-  InputDisplayValue,
-  InputStateValue,
-  StoreInputOptions,
-} from "./types";
+import type { InputDisplayValue, InputStateValue, StoreInputOptions } from "./types";
 
-export function convertToInputValue<TValue>(
-  value: TValue,
-  type?: HTMLInputTypeAttribute,
-): InputDisplayValue {
+export function convertToInputValue<TValue>(value: TValue, type?: HTMLInputTypeAttribute): InputDisplayValue {
   if (value === undefined || value === null) {
     return "";
   }
@@ -21,20 +14,11 @@ export function convertToInputValue<TValue>(
   return Array.isArray(value) ? value.map(String) : String(value);
 }
 
-export function convertToChecked(
-  value: unknown,
-  type?: HTMLInputTypeAttribute,
-  inputValue?: InputDisplayValue,
-) {
-  return type === "radio"
-    ? value !== undefined && Object.is(value, inputValue)
-    : Boolean(value);
+export function convertToChecked(value: unknown, type?: HTMLInputTypeAttribute, inputValue?: InputDisplayValue) {
+  return type === "radio" ? value !== undefined && Object.is(value, inputValue) : Boolean(value);
 }
 
-export function convertToStateValue(
-  value: InputStateValue,
-  type?: HTMLInputTypeAttribute,
-): unknown {
+export function convertToStateValue(value: InputStateValue, type?: HTMLInputTypeAttribute): unknown {
   if (Array.isArray(value)) {
     return value;
   }
@@ -68,21 +52,14 @@ export function resolveDefaultValue<TInputElement, TValue>(
     return props.defaultValue;
   }
 
-  if (
-    props.type === "checkbox" ||
-    props.type === "radio" ||
-    props.type === "file"
-  ) {
+  if (props.type === "checkbox" || props.type === "radio" || props.type === "file") {
     return undefined;
   }
 
   return format(stateValue);
 }
 
-export function resolveDefaultChecked<
-  TInputElement,
-  TValue,
->(
+export function resolveDefaultChecked<TInputElement, TValue>(
   props: StoreInputOptions<TInputElement>,
   stateValue: TValue,
   toChecked: (value: TValue) => boolean,
@@ -95,15 +72,10 @@ export function resolveDefaultChecked<
     return props.defaultChecked;
   }
 
-  return props.type === "checkbox" || props.type === "radio"
-    ? toChecked(stateValue)
-    : undefined;
+  return props.type === "checkbox" || props.type === "radio" ? toChecked(stateValue) : undefined;
 }
 
-export function resolveResetStateValue<
-  TInputElement,
-  TValue,
->(
+export function resolveResetStateValue<TInputElement, TValue>(
   props: StoreInputOptions<TInputElement>,
   stateValue: TValue,
   parse: (value: InputStateValue) => TValue,
@@ -117,10 +89,7 @@ export function resolveResetStateValue<
       return props.value as TValue;
     }
 
-    return convertToStateValue(
-      String(props.defaultValue ?? ""),
-      props.type,
-    ) as TValue;
+    return convertToStateValue(String(props.defaultValue ?? ""), props.type) as TValue;
   }
 
   if (

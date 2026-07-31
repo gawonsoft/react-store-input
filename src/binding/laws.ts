@@ -14,18 +14,10 @@ function structuralEqual(previous: unknown, next: unknown): boolean {
   }
 
   if (Array.isArray(previous) && Array.isArray(next)) {
-    return (
-      previous.length === next.length &&
-      previous.every((value, index) => structuralEqual(value, next[index]))
-    );
+    return previous.length === next.length && previous.every((value, index) => structuralEqual(value, next[index]));
   }
 
-  if (
-    previous !== null &&
-    next !== null &&
-    typeof previous === "object" &&
-    typeof next === "object"
-  ) {
+  if (previous !== null && next !== null && typeof previous === "object" && typeof next === "object") {
     const previousRecord = previous as Record<PropertyKey, unknown>;
     const nextRecord = next as Record<PropertyKey, unknown>;
     const previousKeys = Reflect.ownKeys(previousRecord);
@@ -55,15 +47,9 @@ export function assertLensLaws<TState extends object, TValue>(
 ) {
   const equalsState = options.equalsState ?? structuralEqual;
   const equalsValue = options.equalsValue ?? structuralEqual;
-  const set = (state: TState, value: TValue) =>
-    produce(state, (draft) => lens.set(draft, value)) as TState;
+  const set = (state: TState, value: TValue) => produce(state, (draft) => lens.set(draft, value)) as TState;
 
-  if (
-    !equalsState(
-      set(options.state, lens.get(options.state as Immutable<TState>)),
-      options.state,
-    )
-  ) {
+  if (!equalsState(set(options.state, lens.get(options.state as Immutable<TState>)), options.state)) {
     throw new Error("Lens law failed: setting the current value changed state.");
   }
 
@@ -77,12 +63,7 @@ export function assertLensLaws<TState extends object, TValue>(
 
   for (const previous of options.values) {
     for (const next of options.values) {
-      if (
-        !equalsState(
-          set(set(options.state, previous), next),
-          set(options.state, next),
-        )
-      ) {
+      if (!equalsState(set(set(options.state, previous), next), set(options.state, next))) {
         throw new Error("Lens law failed: the last set did not win.");
       }
     }
@@ -117,9 +98,7 @@ export function assertCodecLaws<TValue, TInput, TError>(
     const result = codec.parse(input);
 
     if (result.isOk && !equalsInput(codec.format(result.value), input)) {
-      throw new Error(
-        "Codec law failed: format(parse(input).value) !== input.",
-      );
+      throw new Error("Codec law failed: format(parse(input).value) !== input.");
     }
   }
 }

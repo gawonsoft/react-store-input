@@ -109,7 +109,7 @@ A custom control is defined from three small pieces:
 
 Keeping the lens and codec separate lets one state field use different UI
 representations, and lets one codec be reused for the same domain type in
-different stores.
+different stores. `InputBinding` itself is not tied to an HTML element.
 
 ```tsx
 import {
@@ -201,6 +201,21 @@ function BudgetInput({ store }: { store: Store<FormState> }) {
 }
 ```
 
+For an imperative editor or another non-DOM control, use the same binding
+through `useStoreBinding`. It parses commits, exposes validation metadata, and
+synchronizes external store changes without echoing its own dispatch:
+
+```tsx
+const field = useStoreBinding(store, budgetBinding, {
+  onStoreChange: (input) => editorRef.current?.setValue(input),
+});
+
+<ExternalEditor
+  defaultValue={field.initialValue}
+  onChange={(input) => field.commit(input)}
+/>;
+```
+
 Generated lenses and codecs can be checked with the exported law assertions in
 unit tests:
 
@@ -222,22 +237,18 @@ values, plus `format(parse(input).value)` for successful canonical inputs when
 `inputs` are supplied. Normalizing or lossy codecs may supply domain-specific
 `equals` and `equalsInput` functions.
 
-For non-input controllers, call the returned `dispatch` when the controller
-changes:
+For non-input actions, dispatch directly to the store:
 
 ```tsx
 import type { Store } from "gw-store";
-import { useStoreController } from "react-store-input";
 
 function Counter({ store }: { store: Store<{ count: number }> }) {
-  const { dispatch } = useStoreController(store, {
-    onSubscribe: () => {},
-    onDispatch: (state) => {
+  const increment = () =>
+    store.dispatch((state) => {
       state.count += 1;
-    },
-  });
+    });
 
-  return <button onClick={dispatch}>Increment</button>;
+  return <button onClick={increment}>Increment</button>;
 }
 ```
 

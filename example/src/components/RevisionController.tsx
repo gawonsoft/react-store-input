@@ -1,20 +1,17 @@
 import { useSelector, type Store } from "gw-store";
-import { useStoreController } from "react-store-input";
 import type { DemoState } from "../demo/state";
 
 export function RevisionController({ store }: { store: Store<DemoState> }) {
   const revision = useSelector(store, (state) => state.revision);
-  const { dispatch } = useStoreController(store, {
-    onSubscribe: () => {},
-    onDispatch: (state) => {
+  const increment = () =>
+    store.dispatch((state) => {
       state.revision += 1;
-    },
-  });
+    });
 
   return (
-    <button type="button" className="revision-button" onClick={dispatch}>
+    <button type="button" className="revision-button" onClick={increment}>
       <span>Revision {revision}</span>
-      <strong>Increment through controller</strong>
+      <strong>Increment through store dispatch</strong>
     </button>
   );
 }

@@ -1,5 +1,6 @@
 import {
   createRender,
+  useStoreBinding,
   useStoreHTMLElement,
   useStoreInput,
 } from "react-store-input";
@@ -12,6 +13,7 @@ const storeType: Store<State> | undefined = undefined;
 
 void storeType;
 void createRender;
+void useStoreBinding;
 void useStoreHTMLElement;
 void useStoreInput;
 void shallowEqual;

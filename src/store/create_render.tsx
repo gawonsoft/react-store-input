@@ -20,9 +20,7 @@ export function createRender<TState extends object>(
   return <Component />;
 }
 
-export function createRenderWithStore<TState extends object>(
-  store: Store<TState>,
-): CreateRender<TState> {
+export function createRenderWithStore<TState extends object>(store: Store<TState>): CreateRender<TState> {
   return function createRender(selector, compare) {
     function Component() {
       const result = useSelector(store, (state) => state, compare);

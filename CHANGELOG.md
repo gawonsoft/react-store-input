@@ -9,6 +9,11 @@ and this project uses [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Replaced `useStoreController` with `useStoreBinding`, a Lens/Codec-based
+  adapter for synchronizing external controls without exposing whole-state
+  subscription and draft callbacks.
+- Reimplemented `useStoreHTMLElement` and the optional `TextEditor` integration
+  on top of `useStoreBinding`.
 - Renamed `useStoreComponent` to `useStoreInput`. It accepts an existing
   `gw-store` `Store` and returns bound `input`, `select`, and `textarea`
   components.
@@ -21,6 +26,8 @@ and this project uses [Semantic Versioning](https://semver.org/).
 
 - Removed the deprecated `useFormStore`, `FormStore`, and `FormComponents`
   APIs.
+- Removed `useStoreController`. Non-input actions should call
+  `store.dispatch` directly.
 
 ## [0.4.0] - 2026-07-22
 

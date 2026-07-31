@@ -8,6 +8,7 @@ const {
   err,
   ok,
   stateLens,
+  useStoreBinding,
   useStoreHTMLElement,
 } = require("../../dist/index.js");
 const {
@@ -43,6 +44,57 @@ test("generated lenses and codecs satisfy their round-trip laws", () => {
     values: [0, 10, -25],
     inputs: ["0", "10", "-25"],
   });
+});
+
+test("store bindings commit values and synchronize external changes", async () => {
+  const synchronizedInputs = [];
+  let field;
+  const store = await mount({ form: { amount: 5 } }, (_controls, store) => {
+    function BindingAdapter() {
+      field = useStoreBinding(store, amountBinding, {
+        onStoreChange: (input) => synchronizedInputs.push(input),
+      });
+
+      return React.createElement("span", {
+        "data-valid": String(field.meta.valid),
+      });
+    }
+
+    return React.createElement(BindingAdapter);
+  });
+
+  assert.equal(field.initialValue, "5");
+
+  await act(async () => field.commit("12"));
+
+  assert.equal(store.state.form.amount, 12);
+  assert.deepEqual(synchronizedInputs, []);
+
+  await act(async () => {
+    store.dispatch((state) => {
+      state.form.amount = 25;
+    });
+  });
+
+  assert.deepEqual(synchronizedInputs, ["25"]);
+
+  await act(async () => field.commit("invalid"));
+
+  assert.equal(field.meta.valid, false);
+  assert.equal(store.state.form.amount, 25);
+
+  await act(async () => {
+    store.dispatch((state) => {
+      state.form.amount = 30;
+    });
+  });
+
+  assert.deepEqual(synchronizedInputs, ["25"]);
+
+  await act(async () => field.reset(5));
+
+  assert.equal(field.meta.valid, true);
+  assert.equal(store.state.form.amount, 5);
 });
 
 test("binding parse errors preserve store state and expose metadata", async () => {

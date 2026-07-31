@@ -6,8 +6,6 @@ export type Codec<TValue, TInput, TError = never> = {
   equals?: (previous: TValue, next: TValue) => boolean;
 };
 
-export function defineCodec<TValue, TInput, TError = never>(
-  codec: Codec<TValue, TInput, TError>,
-) {
+export function defineCodec<TValue, TInput, TError = never>(codec: Codec<TValue, TInput, TError>) {
   return codec;
 }

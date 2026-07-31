@@ -3,21 +3,10 @@ import { ok } from "gw-result";
 import type { Store } from "gw-store";
 import type { InputBinding } from "../binding/binding";
 import { useStoreHTMLElement } from "./use_store_html_element";
-import type {
-  InputControlValue,
-  InputStateValue,
-  StoreInputOptions,
-} from "./types";
-import {
-  convertToInputValue,
-  convertToStateValue,
-  resolveResetStateValue,
-} from "./value_conversion";
+import type { InputControlValue, InputStateValue, StoreInputOptions } from "./types";
+import { convertToInputValue, convertToStateValue, resolveResetStateValue } from "./value_conversion";
 
-type StoreElement =
-  | HTMLInputElement
-  | HTMLTextAreaElement
-  | HTMLSelectElement;
+type StoreElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
 export type StoreInputWithNameProps<
   TInputElement,
@@ -27,10 +16,7 @@ export type StoreInputWithNameProps<
   name: TName;
 };
 
-function formatControlValue<TValue>(
-  value: TValue,
-  type: StoreInputOptions<StoreElement>["type"],
-): InputControlValue {
+function formatControlValue<TValue>(value: TValue, type: StoreInputOptions<StoreElement>["type"]): InputControlValue {
   if (type === "checkbox") {
     return Boolean(value);
   }
@@ -42,14 +28,9 @@ function formatControlValue<TValue>(
   return convertToInputValue(value, type);
 }
 
-function parseControlValue<TValue>(
-  value: InputControlValue,
-  type: StoreInputOptions<StoreElement>["type"],
-): TValue {
+function parseControlValue<TValue>(value: InputControlValue, type: StoreInputOptions<StoreElement>["type"]): TValue {
   if (typeof value === "string" || Array.isArray(value)) {
-    const stateInputValue: InputStateValue = Array.isArray(value)
-      ? [...value]
-      : value;
+    const stateInputValue: InputStateValue = Array.isArray(value) ? [...value] : value;
     return convertToStateValue(stateInputValue, type) as TValue;
   }
 
@@ -67,19 +48,12 @@ export function useStoreInputWithName<
 ) {
   type TValue = TState[TName];
 
-  const binding = useMemo<
-    InputBinding<TState, TValue, InputControlValue, never>
-  >(
+  const binding = useMemo<InputBinding<TState, TValue, InputControlValue, never>>(
     () => ({
       lens: {
-        get: (state) =>
-          (state as Readonly<Record<PropertyKey, unknown>>)[
-            props.name as PropertyKey
-          ] as TValue,
+        get: (state) => (state as Readonly<Record<PropertyKey, unknown>>)[props.name as PropertyKey] as TValue,
         set: (state, value) => {
-          (state as unknown as Record<PropertyKey, unknown>)[
-            props.name as PropertyKey
-          ] = value;
+          (state as unknown as Record<PropertyKey, unknown>)[props.name as PropertyKey] = value;
         },
       },
       codec: {
@@ -90,10 +64,8 @@ export function useStoreInputWithName<
     [props.name, props.type],
   );
   const initialStateValue = binding.lens.get(store.state);
-  const resetValue = resolveResetStateValue(
-    props,
-    initialStateValue,
-    (value) => parseControlValue<TValue>(value, props.type),
+  const resetValue = resolveResetStateValue(props, initialStateValue, (value) =>
+    parseControlValue<TValue>(value, props.type),
   );
   const { inputProps } = useStoreHTMLElement(ref, store, binding, {
     ...props,
