@@ -2,7 +2,7 @@ import {
   TextEditor as GwTextEditor,
   TextEditorController,
   type TextEditorProps as GwTextEditorProps,
-} from "gw-react-text-editor";
+} from "gw-rich-text-editor";
 import { ok } from "gw-result";
 import { useImperativeHandle, useMemo, useRef } from "react";
 import type { Store } from "gw-store";
@@ -54,9 +54,9 @@ export function TextEditor<TState extends object>({
       ref={controllerRef}
       name={String(name)}
       defaultValue={defaultValue ?? initialValue}
-      onChange={(event) => {
-        commit(controllerRef.current?.value ?? "");
-        props.onChange?.(event);
+      onChange={(value) => {
+        commit(value);
+        props.onChange?.(value);
       }}
     />
   );

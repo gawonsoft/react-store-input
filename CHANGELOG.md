@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - 2026-08-10
+
+### Changed
+
+- Replaced the optional `gw-react-text-editor` peer integration with
+  `gw-rich-text-editor@^0.1.4` and updated the text editor binding for its
+  current value callback API.
+- The optional text editor integration now requires Node.js 20 or newer,
+  matching the new peer package.
+
 ## [0.5.0] - 2026-07-31
 
 ### Changed

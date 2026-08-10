@@ -255,11 +255,11 @@ function Counter({ store }: { store: Store<{ count: number }> }) {
 ## Optional text editor
 
 The ProseMirror-based editor is a separate entry point so normal forms do not
-download or bundle editor dependencies. It requires React 19 and an explicit
-optional peer installation:
+download or bundle editor dependencies. It requires React 19, Node.js 20 or
+newer, and an explicit optional peer installation:
 
 ```sh
-npm install gw-react-text-editor
+npm install gw-rich-text-editor
 ```
 
 ```tsx
