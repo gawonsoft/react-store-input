@@ -1,6 +1,6 @@
 {
   "name": "react-store-input",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Typed React form inputs backed by a small immutable store",
   "keywords": [
     "react",
@@ -73,7 +73,7 @@
     "@types/react-dom": "^18.3.1 || ^19.2.1",
     "eslint": "^9.39.5",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "gw-rich-text-editor": "^0.1.4",
+    "gw-rich-text-editor": "^0.2.0",
     "jsdom": "^24.1.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -82,7 +82,7 @@
     "typescript-eslint": "^8.65.0"
   },
   "peerDependencies": {
-    "gw-rich-text-editor": "^0.1.4",
+    "gw-rich-text-editor": "^0.2.0",
     "react": ">=18.0.0 <20.0.0",
     "react-dom": ">=18.0.0 <20.0.0"
   },

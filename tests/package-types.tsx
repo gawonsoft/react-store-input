@@ -11,7 +11,7 @@ import {
   useStoreHTMLElement,
   useStoreInput,
 } from "react-store-input";
-import { TextEditor } from "react-store-input/text-editor";
+import { RichTextEditor, TextEditor } from "react-store-input/text-editor";
 import { useRef } from "react";
 import { useSelector, useStore } from "gw-store";
 // @ts-expect-error StoreInputProps was removed in 0.4.0.
@@ -67,6 +67,7 @@ function TypeExample() {
       <Input store={store} name="count" type="number" />
       <Textarea store={store} name="email" rows={4} wrap="soft" />
       <TextEditor store={formStore} name="content" />
+      <RichTextEditor store={formStore} name="content" />
       <controls.textarea name="content" />
       <input
         ref={nicknameRef}

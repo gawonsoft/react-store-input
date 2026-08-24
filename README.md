@@ -263,10 +263,14 @@ npm install gw-rich-text-editor
 ```
 
 ```tsx
-import { TextEditor } from "react-store-input/text-editor";
+import { RichTextEditor, TextEditor } from "react-store-input/text-editor";
 
 <TextEditor store={store} name="content" />;
+<RichTextEditor store={store} name="content" />;
 ```
+
+`TextEditor` binds the minimal paragraph editor. `RichTextEditor` binds the
+built-in rich schema, history, keymap, and file-attachment preset.
 
 ## Development
 

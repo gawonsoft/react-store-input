@@ -3,9 +3,9 @@ import type { Store } from "gw-store";
 import { Section } from "../components/Section";
 import type { DemoState } from "../demo/state";
 
-const LazyTextEditor = lazy(() =>
-  import("react-store-input/text-editor").then(({ TextEditor }) => ({
-    default: TextEditor<DemoState>,
+const LazyRichTextEditor = lazy(() =>
+  import("react-store-input/text-editor").then(({ RichTextEditor }) => ({
+    default: RichTextEditor<DemoState>,
   })),
 );
 
@@ -29,7 +29,7 @@ export function EditorSection({ store }: { store: Store<DemoState> }) {
           </button>
         ) : (
           <Suspense fallback={<p className="loading">Loading editor…</p>}>
-            <LazyTextEditor store={store} name="content" />
+            <LazyRichTextEditor store={store} name="content" />
           </Suspense>
         )}
       </div>

@@ -8,7 +8,7 @@ const core = require(path.join(root, "dist/index.js"));
 const editor = require(path.join(root, "dist/text-editor.js"));
 const coreSource = fs.readFileSync(path.join(root, "dist/index.js"), "utf8");
 
-assert.equal(manifest.version, "0.6.0");
+assert.equal(manifest.version, "0.7.0");
 assert.equal(manifest.dependencies["gw-store"], "0.2.0");
 assert.equal(manifest.dependencies["gw-result"], "0.3.0");
 assert.equal(manifest.main, "./dist/index.js");
@@ -29,6 +29,7 @@ assert.equal(typeof core.ok, "function");
 assert.equal(typeof core.err, "function");
 assert.equal(core.TextEditor, undefined);
 assert.equal(typeof editor.TextEditor, "function");
+assert.equal(typeof editor.RichTextEditor, "function");
 assert.equal(coreSource.includes("gw-rich-text-editor"), false);
 
 async function checkEsm() {
@@ -43,6 +44,7 @@ async function checkEsm() {
   assert.equal(typeof esmCore.ok, "function");
   assert.equal(esmCore.TextEditor, undefined);
   assert.equal(typeof esmEditor.TextEditor, "function");
+  assert.equal(typeof esmEditor.RichTextEditor, "function");
 }
 
 checkEsm()
